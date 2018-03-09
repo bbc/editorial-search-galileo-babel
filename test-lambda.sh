@@ -1,0 +1,1 @@
+ aws lambda invoke --invocation-type RequestResponse --function-name int-editorial-search-galileo-babel --region eu-west-2 --payload file:///home/vagrant/workspace/babel-fish/galileoBabelNotification.txt --profile default out.txt

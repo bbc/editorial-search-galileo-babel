@@ -1,0 +1,164 @@
+from troposphere import Template,Ref,Parameter,Sub,GetAtt,Join
+from troposphere.s3 import Rules as S3Key,Bucket,LifecycleConfiguration,LifecycleRule
+from troposphere.awslambda import Function, Code, Alias, Permission, Environment
+import awacs
+from troposphere.iam import Role, PolicyType
+from awacs.aws import Action,Allow,Condition,Policy,PolicyDocument,Principal,Statement,Condition
+from awacs.sts import AssumeRole
+from troposphere import iam
+
+class GalileoBabelStack(object):
+    def __init__(self):
+        pass
+
+    def build(self, template):
+        
+        lambda_bucket = template.add_parameter(Parameter(
+            "LambdaBucket",
+            Type="String",
+            Default="galileo-babel-lambda",
+            Description="The S3 Bucket that contains the zip to bootstrap your "
+                "lambda function"
+        ))
+
+        s3_key = template.add_parameter(Parameter(
+            "S3Key",
+            Type="String",
+            Default="GalileoBabel.zip",
+            Description="The S3 key that references the zip to bootstrap your "
+                "lambda function"
+        ))
+
+        handler = template.add_parameter(Parameter(
+            "LambdaHandler",
+            Type="String",
+            Default="galileo-babel-s3.lambda_handler",
+            Description="The name of the function (within your source code) "
+                "that Lambda calls to start running your code."
+        ))
+
+        memory_size = template.add_parameter(Parameter(
+            "LambdaMemorySize",
+            Type="Number",
+            Default="512",
+            Description="The amount of memory, in MB, that is allocated to "
+                "your Lambda function."
+        ))
+
+        timeout = template.add_parameter(Parameter(
+            "LambdaTimeout",
+            Type="Number",
+            Default="15",
+            Description="The function execution time (in seconds) after which "
+                "Lambda terminates the function. "
+        ))
+
+        env = template.add_parameter(Parameter(
+            "LambdaEnv",
+            AllowedValues=["int", "test", "live", "dev"],
+            Default="int",
+            Description="Environment this lambda represents - used for alias name",
+            Type="String",
+        ))
+
+        function_role = template.add_resource(
+            Role(
+                "LambdaExecutionRole",
+                Policies=[iam.Policy(
+                    PolicyName = "FunctionRolePolicy",
+                    PolicyDocument = Policy(
+                        Statement = [ 
+                            Statement(
+                                Effect=Allow,
+                                Action = [ Action("logs", "CreateLogGroup"),
+                                    Action("logs", "CreateLogStream"),
+                                    Action("logs", "PutLogEvents"),
+                                ],
+                                Resource = ["arn:aws:logs:*:*:*"]
+                            )]
+                ))],
+                AssumeRolePolicyDocument=Policy(
+                    Statement=[
+                        Statement(
+                            Effect=Allow,
+                            Action=[AssumeRole],
+                            Principal=Principal(
+                                "Service", ["lambda.amazonaws.com"]
+                            )
+                        )
+                    ]
+                )
+            )
+
+        )
+
+        aws_lambda = template.add_resource(
+            Function(
+                "LambdaFunction",
+                Code=Code(
+                    S3Bucket=Ref(lambda_bucket),
+                    S3Key=Ref(s3_key)
+                ),
+                Description="Function used to save galileo babel notifications in a bucket",
+                Handler=Ref(handler),
+                MemorySize=Ref(memory_size),
+                FunctionName=Sub("${LambdaEnv}-editorial-search-galileo-babel"),
+                Environment = Environment(Variables= {'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
+                Role=GetAtt(function_role, "Arn"),
+                Runtime="python3.6",
+                Timeout=Ref(timeout)
+            )
+        )
+
+        template.add_resource(Permission(
+                "InvokeLambdaPermission",
+                FunctionName=GetAtt(aws_lambda, "Arn"),
+                Action="lambda:InvokeFunction",
+                SourceArn = Sub("arn:aws:s3:::${LambdaEnv}-editorial-search-galileo-babel"),
+                Principal="s3.amazonaws.com"
+            ))
+
+        NotificationsToBeIngested = template.add_resource(Bucket(
+                    "NotificationsToBeIngested", 
+                    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
+                    # Attach a LifeCycle Configuration
+                    LifecycleConfiguration=LifecycleConfiguration(Rules=[
+                    # Add a rule to
+                    LifecycleRule(
+                        # Rule attributes
+                        Id="NotificationsToBeIngested",
+                        Status="Enabled",
+                        # Applies to current objects
+                        ExpirationInDays=1,
+                    )]),
+                ))
+
+            
+        template.add_resource(PolicyType(
+            "FunctionPolicy",
+            PolicyName="FunctionPolicy",
+            Roles=[Ref(function_role)],
+            PolicyDocument= Policy(
+                Statement=[
+                    Statement(
+                        Effect=Allow,
+                        Action=[Action("s3","ListBucket")],
+                        Resource=[GetAtt(NotificationsToBeIngested,"Arn")],
+                    ),
+                    Statement(
+                        Effect=Allow,
+                        Action=[Action("s3","GetObject"), Action("s3","PutObject"), ],
+                        Resource=[Join("/", [GetAtt(NotificationsToBeIngested,"Arn"),"*"])],
+                    )
+                ]
+            
+            )
+        ))
+
+        template.add_resource(Alias(
+            "BabelFishLambdaAlias",
+            Description="Alias for the babel fish lambda",
+            FunctionName=Ref(aws_lambda),
+            FunctionVersion="$LATEST",
+            Name=Ref(env)
+        ))
