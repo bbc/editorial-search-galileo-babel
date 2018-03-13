@@ -59,6 +59,7 @@ You will need to install the troposhere components:
    
 ##### Test the lambda function
 
-To test the lambda function execute the following script ```test-lambda.sh```
+To test the lambda function execute the following command: 
+```pytest tests/test_galileobabel.py```
 
-Note: Make sure to change the name of the function.
+Note: Make sure to change the name of the function in  ```setup.cfg```.
