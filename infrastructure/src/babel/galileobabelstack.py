@@ -132,8 +132,7 @@ class GalileoBabelStack(object):
                         ExpirationInDays=1,
                     )]),
                 ))
-
-            
+                    
         template.add_resource(PolicyType(
             "FunctionPolicy",
             PolicyName="FunctionPolicy",

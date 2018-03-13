@@ -8,7 +8,8 @@ setup(
     url='https://github.com/bbc/editorial-search-galileo-babel', 
     # For a list of valid classifiers, see
     packages=find_packages(exclude=['tests', 'tests.*']),
-    install_requires=['troposphere', 'awacs','cosmosTroposphere', 'boto3'],
+    install_requires=['troposphere', 'awacs', 'boto3'],
+    setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     test_suite="tests",
     use_2to3=True,
