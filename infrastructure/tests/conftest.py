@@ -24,9 +24,7 @@ def data():
 def aws_lambda():
     return boto3.client('lambda', region_name="eu-west-2")
 
-
 @pytest.fixture(scope="module")
 def s3():
-    s3_resource = boto3.resource('s3', region_name="eu-west-2")
-    return s3_resource.meta.client
-  
+    return boto3.resource('s3', region_name="eu-west-2")
+    
