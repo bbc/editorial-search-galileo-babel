@@ -38,7 +38,7 @@ def main():
     galileoBabelStack = GalileoBabelStack()
     galileoBabelStack.build(t)
     
-    print(t.to_json())
+    #print(t.to_json())
     devEnvironment = DevEnvironment(t.to_json())
     devEnvironment.createStack(params[0], params[1])
     

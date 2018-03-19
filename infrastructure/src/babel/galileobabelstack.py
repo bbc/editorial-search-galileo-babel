@@ -5,6 +5,7 @@ import awacs
 from troposphere.iam import Role, PolicyType
 from awacs.aws import Action,Allow,Condition,Policy,PolicyDocument,Principal,Statement,Condition
 from awacs.sts import AssumeRole
+from awacs.s3 import ListBucket,GetObject,PutObject
 from troposphere import iam
 
 class GalileoBabelStack(object):
@@ -141,12 +142,12 @@ class GalileoBabelStack(object):
                 Statement=[
                     Statement(
                         Effect=Allow,
-                        Action=[Action("s3","ListBucket")],
+                        Action=[ListBucket],
                         Resource=[GetAtt(NotificationsToBeIngested,"Arn")],
                     ),
                     Statement(
                         Effect=Allow,
-                        Action=[Action("s3","GetObject"), Action("s3","PutObject"), ],
+                        Action=[GetObject,PutObject],
                         Resource=[Join("/", [GetAtt(NotificationsToBeIngested,"Arn"),"*"])],
                     )
                 ]
