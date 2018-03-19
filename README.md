@@ -39,7 +39,7 @@ You will need to install the troposhere components:
 1. create a bucket called ```galileo-babel-lambda```
 2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket
 
-##### Create the lamba stack
+##### Create the lambda stack
 
 1. Create aws credentials
     
@@ -63,3 +63,8 @@ To test the lambda function execute the following command:
 ```pytest tests/test_galileobabel.py```
 
 Note: Make sure to change the name of the function in  ```setup.cfg```.
+
+#### Development ####
+After making changes to the lambda peform the  following operations in order:
+1: "deploy.sh" This is used to put new code in to the bucket
+2: "update.sh" This is used to update the lambda to use the new code in the bucket
