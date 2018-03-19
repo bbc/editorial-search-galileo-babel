@@ -27,6 +27,7 @@ class TestGalileoBabel(object):
                     LogType='Tail',
                     Payload=io.getvalue().encode()
              )    
+            time.sleep(0.05)
 
         time.sleep(15.0)
         size = sum(1 for _ in bucket.objects.all())

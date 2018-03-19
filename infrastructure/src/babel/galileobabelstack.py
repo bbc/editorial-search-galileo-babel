@@ -155,8 +155,8 @@ class GalileoBabelStack(object):
         ))
 
         template.add_resource(Alias(
-            "BabelFishLambdaAlias",
-            Description="Alias for the babel fish lambda",
+            "GalileoBabelLambdaAlias",
+            Description="Alias for the galileo babel lambda",
             FunctionName=Ref(aws_lambda),
             FunctionVersion="$LATEST",
             Name=Ref(env)
