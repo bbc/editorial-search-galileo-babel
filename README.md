@@ -2,24 +2,6 @@
 
 This is the lambda function used to put galileo babel notifications into a bucket.
 
-#### Install Python 3.6
-
-If you do not have python 3.6 installed on your sandbox follow the instructions below.
-
-```
-wget http://python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz
-tar xf Python-3.6.3.tar.xz
-./configure --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
-make && make altinstall
-```
-If you get the following error:
-```
-ln: creating hard link `libpython3.6m.so' => `libpython3.6m.so.1.0': Operation not permitted
-```
-
-Then change line 610 of the ```Makefile```
-
-From ```$(LN) -f $(INSTSONAME) $@; \```  to  ```$(LN) -fs $(INSTSONAME) $@; \```
 
 
 ##### Create virtual environment
@@ -35,6 +17,8 @@ You will need to install the troposhere components:
 
 ```pip install awacs```
 
+```pip install pytest```
+
 ##### Upload Lambda Function
 1. create a bucket called ```galileo-babel-lambda```
 2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket
@@ -48,7 +32,7 @@ You will need to install the troposhere components:
    
 2. Create the stack template for an environment
     
-    In the directory  ```<APP_DIRECTORY>/infrastructure``` 
+    In the directory  ```<APP_DIRECTORY>/infrastructure/src``` 
     
     Type the following:```python -m babel.devenvironment --lambda-function-bucket galileo-babel-lambda --environment <env>```
 
@@ -60,6 +44,9 @@ You will need to install the troposhere components:
 ##### Test the lambda function
 
 To test the lambda function execute the following command: 
+
+    In the directory  ```<APP_DIRECTORY>/infrastructure``` 
+
 ```pytest tests/test_galileobabel.py```
 
 Note: Make sure to change the name of the function in  ```setup.cfg```.

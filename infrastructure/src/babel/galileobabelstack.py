@@ -121,17 +121,7 @@ class GalileoBabelStack(object):
 
         NotificationsToBeIngested = template.add_resource(Bucket(
                     "NotificationsToBeIngested", 
-                    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
-                    # Attach a LifeCycle Configuration
-                    LifecycleConfiguration=LifecycleConfiguration(Rules=[
-                    # Add a rule to
-                    LifecycleRule(
-                        # Rule attributes
-                        Id="NotificationsToBeIngested",
-                        Status="Enabled",
-                        # Applies to current objects
-                        ExpirationInDays=1,
-                    )]),
+                    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel")
                 ))
                     
         template.add_resource(PolicyType(
