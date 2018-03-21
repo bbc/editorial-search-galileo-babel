@@ -20,7 +20,7 @@ You will need to install the troposhere components:
 ```pip install pytest```
 
 ##### Upload Lambda Function
-1. create a bucket called ```galileo-babel-lambda```
+1. create a bucket called ```galileo-babel-lambda```. This is the bucket used to hold the lambda
 2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket
 
 ##### Create the lambda stack
