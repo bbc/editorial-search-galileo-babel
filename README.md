@@ -53,5 +53,5 @@ Note: Make sure to change the name of the function in  ```setup.cfg```.
 
 #### Development ####
 After making changes to the lambda peform the  following operations in order:
-1: "deploy.sh" This is used to put new code in to the bucket
-2: "update.sh" This is used to update the lambda to use the new code in the bucket
+1. "deploy.sh" This is used to put new code in to the bucket
+2. "update.sh" This is used to update the lambda to use the new code in the bucket
