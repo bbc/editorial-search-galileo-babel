@@ -93,8 +93,12 @@ class CreateStack:
                 print(error)
             return None
         except botocore.exceptions.WaiterError as e:
-            response = client.describe_stacks(StackName=stackId)
-            print(str(response))
+
+            if 'stackId' in locals() or 'stackId' in globals():
+                response = client.describe_stacks(StackName=stackId)
+                print(str(response))
+            else:
+                print("Stach was not created")    
             return None
         
         return self.stackId
