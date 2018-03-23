@@ -3,6 +3,7 @@ from troposphere.s3 import Rules as S3Key,Bucket,LifecycleConfiguration,Lifecycl
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment
 import awacs
 from troposphere.iam import Role, PolicyType
+from troposphere.autoscaling import Tags
 from awacs.aws import Action,Allow,Condition,Policy,PolicyDocument,Principal,Statement,Condition
 from awacs.sts import AssumeRole
 from awacs.s3 import ListBucket,GetObject,PutObject
@@ -107,6 +108,9 @@ class GalileoBabelStack(object):
                 Environment = Environment(Variables= {'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
                 Role=GetAtt(function_role, "Arn"),
                 Runtime="python3.6",
+                Tags =Tags(BBCProject="editorial-platform",
+                        BBCComponent="editorial-search-galileo-babel",
+                        BBCEnvironment=Ref("Environment")),
                 Timeout=Ref(timeout)
             )
         )
