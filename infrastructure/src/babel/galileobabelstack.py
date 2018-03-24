@@ -1,9 +1,8 @@
-from troposphere import Template,Ref,Parameter,Sub,GetAtt,Join
+from troposphere import Template,Ref,Parameter,Sub,GetAtt,Join, Tags
 from troposphere.s3 import Rules as S3Key,Bucket,LifecycleConfiguration,LifecycleRule
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment
 import awacs
 from troposphere.iam import Role, PolicyType
-from troposphere.autoscaling import Tags
 from awacs.aws import Action,Allow,Condition,Policy,PolicyDocument,Principal,Statement,Condition
 from awacs.sts import AssumeRole
 from awacs.s3 import ListBucket,GetObject,PutObject
@@ -12,6 +11,14 @@ from troposphere import iam
 class GalileoBabelStack(object):
     def __init__(self):
         pass
+
+    def addBucket(self, template):
+        template.add_resource(Bucket(
+                    "NotificationsToBeIngested", 
+                    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
+                    DeletionPolicy="Retain"
+        ))
+        
 
     def build(self, template):
         
@@ -110,7 +117,7 @@ class GalileoBabelStack(object):
                 Runtime="python3.6",
                 Tags =Tags(BBCProject="editorial-platform",
                         BBCComponent="editorial-search-galileo-babel",
-                        BBCEnvironment=Ref("Environment")),
+                        BBCEnvironment=Sub("${LambdaEnv}")),
                 Timeout=Ref(timeout)
             )
         )
@@ -123,10 +130,7 @@ class GalileoBabelStack(object):
                 Principal="s3.amazonaws.com"
             ))
 
-        NotificationsToBeIngested = template.add_resource(Bucket(
-                    "NotificationsToBeIngested", 
-                    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel")
-                ))
+
                     
         template.add_resource(PolicyType(
             "FunctionPolicy",
@@ -137,12 +141,12 @@ class GalileoBabelStack(object):
                     Statement(
                         Effect=Allow,
                         Action=[ListBucket],
-                        Resource=[GetAtt(NotificationsToBeIngested,"Arn")],
+                        Resource=[Join("",["arn:aws:s3:::",Sub("${LambdaEnv}"),"-editorial-search-galileo-babel"])]
                     ),
                     Statement(
                         Effect=Allow,
                         Action=[GetObject,PutObject],
-                        Resource=[Join("/", [GetAtt(NotificationsToBeIngested,"Arn"),"*"])],
+                        Resource=[Join("/", [Join("",["arn:aws:s3:::",Sub("${LambdaEnv}"),"-editorial-search-galileo-babel"]),"*"])],
                     )
                 ]
             

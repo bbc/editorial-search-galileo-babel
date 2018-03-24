@@ -4,7 +4,8 @@ from babel.common import CreateStack
 from babel.galileobabelstack import GalileoBabelStack
 import argparse
 import sys
-
+import boto3
+from botocore.client import ClientError
 
 class InputParameters:
       
@@ -15,6 +16,15 @@ class InputParameters:
         args = parser.parse_args(argv)
         return (args.lambda_function_bucket, args.lambda_env)
             
+class BucketUtils:
+    
+    def bucketNotExist(self, bucketName):
+        s3 = boto3.resource('s3','eu-west-2')
+        try:
+            s3.meta.client.head_bucket(Bucket=bucketName)
+            return False
+        except ClientError as error:
+            return True            
     
 class DevEnvironment:
     def __init__(self, template):
@@ -32,12 +42,17 @@ def main():
     
     ip = InputParameters()
     params = ip.parse(sys.argv[1:])
-
+    bucketUtils = BucketUtils()
     t = Template(Description=params[0]+" Galileo Bable Stack "+ params[1])
     t.add_version("2010-09-09")
     galileoBabelStack = GalileoBabelStack()
-    galileoBabelStack.build(t)
+
+    if (bucketUtils.bucketNotExist(params[1]+"-editorial-search-galileo-babel")):
+        print("Bucket does not exist -- addding")
+        galileoBabelStack.addBucket(t)
     
+    galileoBabelStack.build(t)
+
     #print(t.to_json())
     devEnvironment = DevEnvironment(t.to_json())
     devEnvironment.createStack(params[0], params[1])
