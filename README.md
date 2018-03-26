@@ -3,7 +3,6 @@
 This is the lambda function used to put galileo babel notifications into a bucket.
 
 
-
 ##### Create virtual environment
 
 ```
@@ -29,17 +28,16 @@ You will need to install the troposhere components:
 
 ##### Create the lambda stack
 
-1. Create aws credentials
-    
-    In the ```iSite2-Vagrant/scripts``` of your sandbox
-    Type the following:```./fetch-aws-creds.py <AWS_ACCOUNT_NUMBER>```
-   
-2. Create the stack template for an environment
+1. Create the stack template for an environment
     
     In the directory  ```<APP_DIRECTORY>/infrastructure/src``` 
     
     Type the following:```python -m babel.devenvironment --lambda-function-bucket <s3-bucket-containing-lambda-function-zipped> --environment <env> --aws-accountId <aws-account-id> --region <aws-region>```
 
+    NOTE: 
+    1. When you first run this, if the bucket does not exist it will create one. The name of the bucket created is extactly the same name as the lambda.
+    2. When you delete the stack if there is data in the bucket then it will not attempt to delete the bucket.
+    3. When you try to create the stack if the bucket already exist then the cloudformation script will not include the bucket creation component.
 3. Register Function with Galileo Babel.
     
     Follow the instructions within the following confluence page:
@@ -59,4 +57,8 @@ Note: Make sure to change the name of the function in  ```setup.cfg```.
 After making changes to the lambda peform the  following operations in order:
 1. "deploy.sh" This is used to put new code in to the bucket
 2. "update.sh" This is used to update the lambda to use the new code in the bucket
+
+### Versioning ####
+Currently the alias always points to the latest version. The details regarding alias, publish and versions still needs to be worked out.
+
 
