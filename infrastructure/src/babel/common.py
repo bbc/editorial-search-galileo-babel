@@ -1,10 +1,48 @@
 # -*- coding: utf-8 -*-
 import boto3
 import botocore
-                
+import pycurl
+import getpass
+import io
+import json
+from io import StringIO
+
+
+class WormHoleCredentials:
+    def __init__(self, accountId):
+        self.accountId = accountId
+
+    def credentials(self):
+        
+        if getpass.getuser() == 'vagrant':
+            cert_location = '/etc/pki/tls/certs/dev.bbc.co.uk.pem'
+            cert_key_location = '/etc/pki/tls/private/dev.bbc.co.uk.key'
+        else:
+            cert_location = '/etc/pki/tls/certs/client.crt'
+            cert_key_location = '/etc/pki/tls/private/client.key'
+
+        e = io.BytesIO()
+        buffer = StringIO()
+        c = pycurl.Curl()
+        #c.setopt(c.VERBOSE, True)
+        c.setopt(c.URL, 'https://wormhole.api.bbci.co.uk/account/' + self.accountId + '/credentials')
+        c.setopt(pycurl.SSL_VERIFYPEER, 1)
+        c.setopt(pycurl.SSL_VERIFYHOST, 2)
+        c.setopt(c.WRITEFUNCTION, e.write)
+        c.setopt(c.SSLCERT, cert_location)
+        c.setopt(c.SSLCERTPASSWD, '')
+        c.setopt(c.SSLKEY, cert_key_location)
+        c.perform()
+        c.close()
+
+        contents = json.loads(e.getvalue().decode('UTF-8'))
+        return contents
+
 class CreateStack:
     
-    def __init__(self, stackName, template,region, lambdaFunctionBucket, lambda_env):
+    def __init__(self, stackName, template,region, lambdaFunctionBucket, lambda_env, wormHoleCredentials):
+    
+        self.wormHoleCredentials = wormHoleCredentials
         self.capabilities = ['CAPABILITY_NAMED_IAM']
         self.template = template
         self.stackName = stackName
@@ -32,7 +70,10 @@ class CreateStack:
                          }]
     
     def checkIfStackExist(self):
-        client = boto3.client('cloudformation', region_name=self.region)
+        client = boto3.client('cloudformation', region_name=self.region,
+                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
+                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
+                                aws_session_token=self.wormHoleCredentials['sessionToken'])
 
         try:
             response = client.describe_stacks(StackName=self.stackName)
@@ -42,7 +83,10 @@ class CreateStack:
             return False
         
     def createStack(self):
-        client = boto3.client('cloudformation', region_name=self.region)
+        client = boto3.client('cloudformation', region_name=self.region,
+                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
+                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
+                                aws_session_token=self.wormHoleCredentials['sessionToken'])
         try:
             response = client.create_stack(
                         StackName=self.stackName,
@@ -68,7 +112,10 @@ class CreateStack:
         return self.stackId
     
     def updateStack(self):
-        client = boto3.client('cloudformation', region_name=self.region)
+        client = boto3.client('cloudformation', region_name=self.region,
+                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
+                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
+                                aws_session_token=self.wormHoleCredentials['sessionToken'],)
         try:
             response = client.update_stack(
                     StackName=self.stackName,

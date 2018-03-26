@@ -13,11 +13,15 @@ source ~/galileo-babel/bin/activate
 
 You will need to install the troposhere components:
 
- ```pip install troposphere```
+```yum install libcurl-devel```
+
+```pip install troposphere```
 
 ```pip install awacs```
 
 ```pip install pytest```
+
+```pip install pycurl```
 
 ##### Upload Lambda Function
 1. create a bucket called ```galileo-babel-lambda```. This is the bucket used to hold the lambda
@@ -34,7 +38,7 @@ You will need to install the troposhere components:
     
     In the directory  ```<APP_DIRECTORY>/infrastructure/src``` 
     
-    Type the following:```python -m babel.devenvironment --lambda-function-bucket galileo-babel-lambda --environment <env>```
+    Type the following:```python -m babel.devenvironment --lambda-function-bucket <s3-bucket-containing-lambda-function-zipped> --environment <env> --aws-accountId <aws-account-id> --region <aws-region>```
 
 3. Register Function with Galileo Babel.
     
@@ -55,3 +59,4 @@ Note: Make sure to change the name of the function in  ```setup.cfg```.
 After making changes to the lambda peform the  following operations in order:
 1. "deploy.sh" This is used to put new code in to the bucket
 2. "update.sh" This is used to update the lambda to use the new code in the bucket
+
