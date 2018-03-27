@@ -2,6 +2,8 @@
 
 This is the lambda function used to put galileo babel notifications into a bucket.
 
+##### Create a aws credentials #####
+./fetch-aws-creds.py 195048873603
 
 ##### Create virtual environment
 
@@ -23,7 +25,7 @@ You will need to install the troposhere components:
 ```pip install pycurl```
 
 ##### Upload Lambda Function
-1. create a bucket called ```galileo-babel-lambda```. This is the bucket used to hold the lambda
+1. create a bucket to hold the lambda function. e.g```galileo-babel-lambda```. 
 2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket
 
 ##### Create the lambda stack
