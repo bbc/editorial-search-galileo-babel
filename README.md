@@ -2,19 +2,19 @@
 
 This is the lambda function used to put galileo babel notifications into a bucket.
 
-##### Create a aws credentials #####
-./fetch-aws-creds.py 195048873603
+##### Fetch aws credentials #####
+fetch-aws-creds 195048873603
 
 ##### Create virtual environment
 
 ```
-virtualenv -p /usr/local/bin/python3.6 ~/galileo-babel
+sudo yum install python34-devel libcurl-devel
+sudo pip3.4 install virtualenv
+python3.4 -m virtualenv ~/galileo-babel
 source ~/galileo-babel/bin/activate
 ```
 
-You will need to install the troposhere components:
-
-```yum install libcurl-devel```
+You will need to install troposhere and some other Python packages:
 
 ```pip install troposphere```
 
@@ -23,6 +23,8 @@ You will need to install the troposhere components:
 ```pip install pytest```
 
 ```pip install pycurl```
+
+```pip install boto3```
 
 ##### Upload Lambda Function
 1. create a bucket to hold the lambda function. e.g```galileo-babel-lambda```. 
@@ -40,11 +42,7 @@ You will need to install the troposhere components:
     1. When you first run this, if the bucket does not exist it will create one. The name of the bucket created is extactly the same name as the lambda.
     2. When you delete the stack if there is data in the bucket then it will not attempt to delete the bucket.
     3. When you try to create the stack if the bucket already exist then the cloudformation script will not include the bucket creation component.
-3. Register Function with Galileo Babel.
-    
-    Follow the instructions within the following confluence page:
-    https://confluence.dev.bbc.co.uk/display/mediatools/Galileo+Babel+User+Guide
-   
+
 ##### Test the lambda function
 
 To test the lambda function execute the following command: 
