@@ -8,13 +8,14 @@ This is the lambda function used to put galileo babel notifications into a bucke
 ##### Create virtual environment
 
 ```
-virtualenv -p /usr/local/bin/python3.6 ~/galileo-babel
+??? install libcurl ???
+sudo yum install python34-devel
+sudo pip3.4 install virtualenv
+python3.4 -m virtualenv ~/galileo-babel
 source ~/galileo-babel/bin/activate
 ```
 
 You will need to install the troposhere components:
-
-```yum install libcurl-devel```
 
 ```pip install troposphere```
 
