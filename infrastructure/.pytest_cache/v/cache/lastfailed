@@ -1,0 +1,5 @@
+{
+  "tests/test_galileobabel.py::TestGalileoBabel::()::test_lambda": true,
+  "tests/test_galileobabel.py::TestGalileoBabel::()::test_lambda[int-editorial-search-galileo-babel]": true,
+  "tests/test_sample.py::test_answer": true
+}
