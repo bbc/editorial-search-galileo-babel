@@ -1,9 +1,10 @@
 # Editorial Search - Galileo Babel
 
+
 This is the lambda function used to put galileo babel notifications into a bucket.
 
 ##### Create a aws credentials #####
-./fetch-aws-creds.py 195048873603
+./fetch-aws-creds.py <aws-account-id>
 
 ##### Create virtual environment
 
@@ -26,7 +27,7 @@ You will need to install the troposhere components:
 
 ##### Upload Lambda Function
 1. create a bucket to hold the lambda function. e.g```galileo-babel-lambda```. 
-2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket
+2. Execute the script ```deploy.sh``` to build and upload the zip file to the bucket. Make sure to change the name of the bucket.
 
 ##### Create the lambda stack
 
