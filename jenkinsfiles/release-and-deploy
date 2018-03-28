@@ -1,0 +1,41 @@
+#!/usr/bin/env groovy
+@org.jenkinsci.plugins.workflow.libs.Library('isite-jenkins-libs')
+import bbc.isite.jenkinslibs.git.GithubNotifier
+
+pipeline {
+    agent { label '!forge' }
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+    }
+    stages {
+        stage('Build') {
+            steps {
+                checkout scm
+                script {
+                    new GithubNotifier().notifyGithubPending();
+                }
+                sh 'rm -rf GalileoBabel.zip'
+		sh 'zip GalileoBabel.zip galileo_babel_s3.py'
+            }
+        }
+        stage('Release') {
+            steps {
+                sh "cosmos-release lambda --lambda-version=${env.BUILD_NUMBER} GalileoBabel.zip editorial-search-galileo-babel"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh "cosmos deploy-lambda -f editorial-search-galileo-babel int ${env.BUILD_NUMBER}"
+            }
+        }
+    }
+  	post {
+  		success {
+  			script { new GithubNotifier().notifyGithubSuccess(); }
+  		}
+  		failure {
+  			script { new GithubNotifier().notifyGithubFailure(); }
+  		}
+  	}
+}
