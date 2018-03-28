@@ -19,6 +19,7 @@ class TestGalileoBabel(object):
         onetoten = range(1,11)
         for count in onetoten:
             io = StringIO()
+            iter(data).next()['testFileName'] = 'TEST/'+count
             json.dump(data, io)
 
             response = aws_lambda.invoke(
@@ -30,5 +31,7 @@ class TestGalileoBabel(object):
             time.sleep(0.05)
 
         time.sleep(15.0)
-        size = sum(1 for _ in bucket.objects.all())
+        kwargs = {'Bucket': resource, 'Delimiter': "Test/"}
+        resp = s3.list_objects_v2(**kwargs)
+        size = sum(1 for _ in resp['Contents'].all())
         assert size  == 10
