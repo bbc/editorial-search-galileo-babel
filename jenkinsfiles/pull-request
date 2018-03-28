@@ -1,0 +1,57 @@
+#!/usr/bin/env groovy
+@org.jenkinsci.plugins.workflow.libs.Library('isite-jenkins-libs')
+import bbc.isite.jenkinslibs.git.GithubNotifier
+import bbc.isite.jenkinslibs.cosmos.build.CosmosBuilder
+import bbc.isite.jenkinslibs.cosmos.deploy.CosmosDeployer
+
+pipeline {
+    agent { label '!forge' }
+    options {
+	    timeout(time: 1, unit: 'HOURS')
+	    timestamps()
+    }
+	  stages {
+    		stage('Build') {
+      			steps {
+                checkout scm
+        				script { new GithubNotifier().notifyGithubPending() ; }
+                dir('api') {
+                    withEnv(["JAVA_HOME=${tool 'java 8'}"]) {
+                        sh 'mvn clean test'
+                    }
+                    script {
+                        new CosmosBuilder().cosmosBuildSetReleaseNumber() ;
+                    }
+                }
+      			}
+    		}
+    		stage('Deploy') {
+            steps {
+                script {
+                    new CosmosDeployer().deployToCosmos("editorial-search", env.COSMOS_RELEASE_NUMBER.toInteger(), true) ;
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                withEnv(["JAVA_HOME=${tool 'java 8'}"]) {
+                    dir('cucumber-test') {
+                        sh 'mvn clean test'
+                        sh 'mvn test -Dtest=RunAll'
+                    }
+                }
+            }
+        }
+	  }
+  	post {
+  		always {
+  			junit '**/target/surefire-reports/*.xml'
+  		}
+  		success {
+  			script { new GithubNotifier().notifyGithubSuccess(); }
+  		}
+  		failure {
+  			script { new GithubNotifier().notifyGithubFailure(); }
+  		}
+  	}
+}
