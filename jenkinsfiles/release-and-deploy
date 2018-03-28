@@ -15,16 +15,18 @@ pipeline {
                 script {
                     new GithubNotifier().notifyGithubPending();
                 }
+                sh 'rm -rf GalileoBabel.zip'
+		sh 'zip GalileoBabel.zip galileo_babel_s3.py'
             }
         }
         stage('Release') {
             steps {
-                sh 'deploy.sh galileo-babel-lambda'
+                sh "cosmos-release lambda --lambda-version=${env.BUILD_NUMBER} GalileoBabel.zip editorial-search-galileo-babel"
             }
         }
         stage('Deploy') {
             steps {
-                sh 'cd infrasctructure/src; python -m babel.devenvironment --lambda-function-bucket galileo-babel-lambda --environment int --aws-accountId 195048873603 --region eu-west-2'
+                sh "cosmos deploy-lambda -f editorial-search-galileo-babel int ${env.BUILD_NUMBER}"
             }
         }
     }

@@ -1,6 +1,0 @@
-#!/usr/bin/env groovy
-node {
-	stage('Trigger pull request') {
-		build job: 'editorial-search-galileo-babel', wait: false, parameters: [string(name: 'BRANCH', value: "${env.GITHUB_PR_SOURCE_BRANCH}")]
-	}
-}
