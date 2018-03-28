@@ -13,8 +13,11 @@ class TestGalileoBabel(object):
     def test_lambda(self, resource, data, aws_lambda, s3):
         
         # Delete all items within the bucket
-        bucket = s3.Bucket(resource)
-        bucket.objects.all().delete()
+	objects_to_delete = s3.list_objects(Bucket=resource, Prefix="Test/")
+
+	delete_keys = {'Objects' : []}
+	delete_keys['Objects'] = [{'Key' : k} for k in [obj['Key'] for obj in objects_to_delete.get('Contents', [])]]
+   	s3.delete_objects(Bucket=resource, Delete=delete_keys)
 
         onetoten = range(1,11)
         for count in onetoten:
