@@ -1,6 +1,5 @@
 # Editorial Search - Galileo Babel
 
-
 This is the lambda function used to put galileo babel notifications into a bucket.
 
 ##### Create a aws credentials #####
