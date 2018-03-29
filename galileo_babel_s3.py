@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     json.dump(event, io)
 
     pid = event["programme"]["pid"]
-    if event.has_key('testFileName'):
+    if 'testFileName' in event:
         key = event['testFileName']
     else:
         ts = datetime.datetime.now().isoformat()
