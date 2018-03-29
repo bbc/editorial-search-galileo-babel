@@ -25,6 +25,6 @@ def lambda_handler(event, context):
         key = event['testFileName']
     else:
         ts = datetime.datetime.now().isoformat()
-        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")
+        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_"+str(uuid.uuid4())+"_"+pid
     
-    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key+"_"+str(uuid.uuid4())+"_"+pid)
+    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key)
