@@ -13,16 +13,18 @@ class TestGalileoBabel(object):
     def test_lambda(self, resource, data, aws_lambda, s3):
         
         # Delete all items within the bucket
-	objects_to_delete = s3.list_objects(Bucket=resource, Prefix="Test/")
+        objects_to_delete = s3.meta.client.list_objects_v2(Bucket=resource, Delimiter="/", Prefix="TEST/")
 
-	delete_keys = {'Objects' : []}
-	delete_keys['Objects'] = [{'Key' : k} for k in [obj['Key'] for obj in objects_to_delete.get('Contents', [])]]
-   	s3.delete_objects(Bucket=resource, Delete=delete_keys)
-
+        delete_keys = {'Objects' : [{}]}
+        if 'Contents' in objects_to_delete:
+            delete_keys['Objects'] = [{'Key' : k} for k in [obj['Key'] for obj in objects_to_delete.get('Contents')]]
+            s3.meta.client.delete_objects(Bucket=resource, Delete=delete_keys)
+        
         onetoten = range(1,11)
         for count in onetoten:
             io = StringIO()
-            iter(data).next()['testFileName'] = 'TEST/'+count
+            fileName = 'TEST/' + str(count)
+            data.update({'testFileName':fileName})
             json.dump(data, io)
 
             response = aws_lambda.invoke(
@@ -34,7 +36,8 @@ class TestGalileoBabel(object):
             time.sleep(0.05)
 
         time.sleep(15.0)
-        kwargs = {'Bucket': resource, 'Delimiter': "Test/"}
-        resp = s3.list_objects_v2(**kwargs)
-        size = sum(1 for _ in resp['Contents'].all())
+        resp = s3.meta.client.list_objects_v2(Bucket=resource, Delimiter= "/", Prefix="TEST/")
+        size = len(resp.get('Contents'))
+        delete_keys['Objects'] = [{'Key' : k} for k in [obj['Key'] for obj in resp.get('Contents')]]
+        s3.meta.client.delete_objects(Bucket=resource, Delete=delete_keys)
         assert size  == 10
