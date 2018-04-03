@@ -62,3 +62,29 @@ After making changes to the lambda peform the  following operations in order:
 Currently the alias always points to the latest version. The details regarding alias, publish and versions still needs to be worked out.
 
 
+### Give Account Permissions ###
+
+In order for galileo to be able to invoke the lambda you will need to grant them permissions. Follow the following steps
+
+1. fetch-aws-creds \<account-to-grant-permissions-to>
+   NOTE: Make sure you change the region in `~/.aws/credentials` to `eu-west-2`
+
+2. ./\<editorial-search-gallileo-babel-home>/add_permissions.sh \<lambda-function-name>
+
+if all is well you should get back a response similar to this:
+```
+{
+    "Statement": "{\"Sid\":\"galileoBabel\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sns.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:eu-west-2:195048873603:function:int-editorial-search-galileo-babel\",\"Condition\":{\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:sns:eu-west-1:161201357662:int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2\"}}}"
+}
+```
+
+### Subscribe Lambda to Topic ###
+
+To subscribe the lambda to the topic.
+
+1. fetch-aws-creds \<account-to-grant-permissions-to>
+   NOTE: Make sure you change the region in `~/.aws/credentials` to `eu-west-2`
+   
+2. ./\<editorial-search-gallileo-babel-home>/subscribe.sh <account-number> \<lambbda-function-name> <alias>
+
+
