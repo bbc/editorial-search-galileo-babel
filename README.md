@@ -87,4 +87,4 @@ To subscribe the lambda to the topic.
    
 2. ./\<editorial-search-gallileo-babel-home>/subscribe.sh <account-number> \<lambbda-function-name> <alias>
 
-
+   	eg. ./\<editorial-search-gallileo-babel-home>/subscribe.sh 195048873603 int-editorial-search-galileo-babel int 
