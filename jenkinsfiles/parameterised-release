@@ -6,7 +6,7 @@ pipeline {
     agent { label '!forge' }
      
     parameters {
-        string(defaultValue: '20', description:'The version to deploy it must be unique", name: 'cosmosVersion')
+        string(defaultValue: '20', description:'The version to deploy it must be unique', name: 'cosmosVersion')
     }
 
     options {
