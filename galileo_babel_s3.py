@@ -20,11 +20,11 @@ def lambda_handler(event, context):
     io = StringIO()
     json.dump(event, io)
 
-    pid = event["MessageId"]
+    messageId = event["MessageId"]
     if 'testFileName' in event:
         key = event['testFileName']
     else:
         ts = datetime.datetime.now().isoformat()
-        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_"+pid
+        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_"+messageId
     
     client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key)
