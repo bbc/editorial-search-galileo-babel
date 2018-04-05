@@ -36,8 +36,16 @@ You will need to install troposhere and some other Python packages:
     
     In the directory  ```<APP_DIRECTORY>/infrastructure/src``` 
     
-    Type the following:```python -m babel.devenvironment --lambda-function-bucket <s3-bucket-containing-lambda-function-zipped> --environment <env> --aws-accountId <aws-account-id> --region <aws-region>```
+    Type the following:```python -m babel.devenvironment --lambda-function-bucket <s3-bucket-containing-lambda-function-zipped> --environment <env> --aws-accountId <aws-account-id> --region <aws-region> --galileo-accountId <galileo accountId> --galileo-region <galileo-region> --galileo-topic <galileo topic>```
 
+    eg:
+    ```python -m babel.devenvironment --lambda-function-bucket galileo-babel-lambda --environment dev --aws-accountId 195048873603 --region eu-west-2 --galileo-accountId 161201357662 --galileo-region eu-west-1 --galileo-topic int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2```
+
+--lambda-function-bucket LAMBDA_FUNCTION_BUCKET
+                         --environment LAMBDA_ENV --aws-accountId AWSACCOUNTID
+                         --region REGION --galileo-babel-accountId
+                         GALLILEO_ACCOUNTID --galileo-region GALILEO_REGION
+                         --galileo-topic GALILEO_TOPIC
     NOTE: 
     1. When you first run this, if the bucket does not exist it will create one. The name of the bucket created is extactly the same name as the lambda.
     2. When you delete the stack if there is data in the bucket then it will not attempt to delete the bucket.
@@ -58,33 +66,4 @@ After making changes to the lambda peform the  following operations in order:
 1. "deploy.sh" This is used to put new code in to the bucket
 2. "update.sh" This is used to update the lambda to use the new code in the bucket
 
-### Versioning ####
-Currently the alias always points to the latest version. The details regarding alias, publish and versions still needs to be worked out.
 
-
-### Give Account Permissions ###
-
-In order for galileo to be able to invoke the lambda you will need to grant them permissions. Follow the following steps
-
-1. fetch-aws-creds \<account-to-grant-permissions-to>
-   NOTE: Make sure you change the region in `~/.aws/credentials` to `eu-west-2`
-
-2. ./\<editorial-search-gallileo-babel-home>/add_permissions.sh \<lambda-function-name>
-
-if all is well you should get back a response similar to this:
-```
-{
-    "Statement": "{\"Sid\":\"galileoBabel\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sns.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:eu-west-2:195048873603:function:int-editorial-search-galileo-babel\",\"Condition\":{\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:sns:eu-west-1:161201357662:int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2\"}}}"
-}
-```
-
-### Subscribe Lambda to Topic ###
-
-To subscribe the lambda to the topic.
-
-1. fetch-aws-creds \<account-to-grant-permissions-to>
-   NOTE: Make sure you change the region in `~/.aws/credentials` to `eu-west-2`
-   
-2. ./\<editorial-search-gallileo-babel-home>/subscribe.sh <account-number> \<lambbda-function-name> <alias>
-
-   	eg. ./\<editorial-search-gallileo-babel-home>/subscribe.sh 195048873603 int-editorial-search-galileo-babel int 

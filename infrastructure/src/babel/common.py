@@ -8,7 +8,7 @@ import json
 from io import StringIO
 
 
-class WormHoleCredentials:
+class WormHoleCredentials(object):
     def __init__(self, accountId):
         self.accountId = accountId
 
@@ -38,7 +38,7 @@ class WormHoleCredentials:
         contents = json.loads(e.getvalue().decode('UTF-8'))
         return contents
 
-class CreateStack:
+class CreateStack(object):
     
     def __init__(self, stackName, template,region, lambdaFunctionBucket, lambda_env, wormHoleCredentials):
     
@@ -149,3 +149,4 @@ class CreateStack:
             return None
         
         return self.stackId
+
