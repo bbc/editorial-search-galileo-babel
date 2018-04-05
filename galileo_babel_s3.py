@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
 
-    logger.info("checking for new code deployement")
+    logger.info("checking for new code deployement["+str(event)+"]")
     io = StringIO()
     json.dump(event, io)
 
