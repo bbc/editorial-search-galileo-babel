@@ -20,7 +20,7 @@ def lambda_handler(event, context):
     io = StringIO()
     json.dump(event, io)
 
-    messageId = event["MessageId"]
+    messageId = event["Records"][0]["Sns"]["MessageId"]
     if 'testFileName' in event:
         key = event['testFileName']
     else:
