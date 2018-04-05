@@ -7,7 +7,7 @@ import sys
 import boto3
 from botocore.client import ClientError
 
-class InputParameters:
+class InputParameters(object):
       
     def parse(self, argv):
         parser = argparse.ArgumentParser(description='Create galileo babel lambda')
@@ -47,14 +47,18 @@ class BucketUtils:
 
 class GalileoPermisionAndSubscription(object):
 
-        def __init__(self, accountId, topic, region):
+        def __init__(self, accountId, topic, region, wormHoleCredentials):
             self.accountId = accountId
             self.topic = topic
             self.region = region
+            self.wormHoleCredentials = wormHoleCredentials
 
         def add_permisions(self, env, region, accountId):
-            
-            client = boto3.client('lambda', region_name=region)
+            client = boto3.client('lambda',region_name=region,
+                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
+                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
+                                aws_session_token=self.wormHoleCredentials['sessionToken'])
+
             response = client.add_permission(
                 FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel:'+str(env),
                 StatementId='galilioBabel'+str(env),
@@ -63,14 +67,20 @@ class GalileoPermisionAndSubscription(object):
                 Principal='sns.amazonaws.com',
                 SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
                 Qualifier=str(env))
+            
             print("Add permssion response["+str(response)+']')
 
         def subscribe_to_topic(self, region, accountId, env):
-            client = boto3.client('sns', region_name=self.region)
+            client = boto3.client('sns',region_name=self.region,
+                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
+                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
+                                aws_session_token=self.wormHoleCredentials['sessionToken'])
+            
             response = client.subscribe(
                         TopicArn='arn:aws:sns:'+self.region+':'+self.accountId+':'+self.topic,
                         Protocol='lambda',
                         Endpoint='arn:aws:lambda:'+region+':'+accountId+':function:'+env+'-editorial-search-galileo-babel:'+env)
+            
             print("subscription response["+str(response)+']')
 
 class EnvironmentBuilder(object):
@@ -118,7 +128,10 @@ def main():
     galileoAccountId = params[4]
     galileoRegion = params[5]
     galileoTopic = params[6]
-    galileoPermisionAndSubscription = GalileoPermisionAndSubscription(galileoAccountId, galileoTopic, galileoRegion)
+    galileoPermisionAndSubscription = GalileoPermisionAndSubscription(galileoAccountId, 
+                                                                      galileoTopic, 
+                                                                      galileoRegion, 
+                                                                      wormHoleCredentials)
     galileoPermisionAndSubscription.add_permisions(environment, region, awsAccountId)
     galileoPermisionAndSubscription.subscribe_to_topic(region, awsAccountId, environment)
     
