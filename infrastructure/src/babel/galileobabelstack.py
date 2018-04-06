@@ -20,6 +20,17 @@ class GalileoBabelStack(object):
         ))
         
 
+    def add_permisions(self, template, aws_lambda, galileoAccountId, galileoTopic, galileoRegion):
+            galileoBabelTopic = "arn:aws:sns:"+galileoRegion+":"+galileoAccountId+":"+galileoTopic
+            print("gallioe babel topic ["+galileoBabelTopic+"]")
+            template.add_resource(Permission(
+                "InvokeLambdaPermission",
+                FunctionName=GetAtt(aws_lambda, "Arn"),
+                Action="lambda:InvokeFunction",
+                SourceArn = galileoBabelTopic,
+                Principal= galileoAccountId
+            ))
+   
     def build(self, template):
         
         lambda_bucket = template.add_parameter(Parameter(
@@ -122,15 +133,6 @@ class GalileoBabelStack(object):
             )
         )
 
-        template.add_resource(Permission(
-                "InvokeLambdaPermission",
-                FunctionName=GetAtt(aws_lambda, "Arn"),
-                Action="lambda:InvokeFunction",
-                SourceArn = Sub("arn:aws:s3:::${LambdaEnv}-editorial-search-galileo-babel"),
-                Principal="s3.amazonaws.com"
-            ))
-
-
                     
         template.add_resource(PolicyType(
             "FunctionPolicy",
@@ -160,3 +162,5 @@ class GalileoBabelStack(object):
             FunctionVersion="$LATEST",
             Name=Ref(env)
         ))
+
+        return aws_lambda
