@@ -59,8 +59,9 @@ class GalileoPermisionAndSubscription(object):
                                 aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
                                 aws_session_token=self.wormHoleCredentials['sessionToken'])
 
+            print("---source-arc["+str(self.region)+':'+str(self.accountId)+':'+str(self.topic))
             response = client.add_permission(
-                FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel:'+str(env),
+                FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel',
                 StatementId='galilioBabel'+str(env),
                 Action='lambda:InvokeFunction',
                 #Principal=str(self.accountId), NOTE: BOTO3 says this should be the accountId
@@ -119,20 +120,23 @@ def main():
         print("Bucket does not exist -- addding")
         galileoBabelStack.addBucket(t)
     
-    galileoBabelStack.build(t)
+
+    galileoTopic = params[6]
+    galileoAccountId = params[4]
+    galileoRegion = params[5]
+    
+    aws_lambda = galileoBabelStack.build(t)
+    galileoBabelStack.add_permisions(t, aws_lambda, galileoAccountId,galileoTopic, galileoRegion)
     #print(t.to_json())
     environmentBuilder = EnvironmentBuilder(t.to_json(), region)
     lambdaBucket = params[0]
     environmentBuilder.createStack(lambdaBucket, environment, wormHoleCredentials)
 
-    galileoAccountId = params[4]
-    galileoRegion = params[5]
-    galileoTopic = params[6]
+
     galileoPermisionAndSubscription = GalileoPermisionAndSubscription(galileoAccountId, 
                                                                       galileoTopic, 
                                                                       galileoRegion, 
                                                                       wormHoleCredentials)
-    galileoPermisionAndSubscription.add_permisions(environment, region, awsAccountId)
     galileoPermisionAndSubscription.subscribe_to_topic(region, awsAccountId, environment)
     
 if __name__ == '__main__':
