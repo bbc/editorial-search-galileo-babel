@@ -22,7 +22,6 @@ class GalileoBabelStack(object):
 
     def add_permisions(self, template, aws_lambda, galileoAccountId, galileoTopic, galileoRegion):
             galileoBabelTopic = "arn:aws:sns:"+galileoRegion+":"+galileoAccountId+":"+galileoTopic
-            print("gallioe babel topic ["+galileoBabelTopic+"]")
             template.add_resource(Permission(
                 "InvokeLambdaPermission",
                 FunctionName=GetAtt(aws_lambda, "Arn"),
