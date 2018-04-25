@@ -62,7 +62,7 @@ class GalileoPermisionAndSubscription(object):
             print("---source-arc["+str(self.region)+':'+str(self.accountId)+':'+str(self.topic))
             response = client.add_permission(
                 FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel',
-                StatementId='galilioBabel'+str(env),
+                StatementId='galilioBabelInt'+str(env),
                 Action='lambda:InvokeFunction',
                 #Principal=str(self.accountId), NOTE: BOTO3 says this should be the accountId
                 Principal='sns.amazonaws.com',

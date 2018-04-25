@@ -16,5 +16,5 @@ def lambda_handler(event, context):
     json.dump(event, io)
     ts = datetime.datetime.now().isoformat()
     key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")
-    pid = event["programme"]["pid"]
-    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key+"_"+str(uuid.uuid4())+"_"+pid)
+    pid = event["MessageId"]
+    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key+"_"+pid)
