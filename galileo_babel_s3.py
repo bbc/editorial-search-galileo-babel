@@ -10,11 +10,20 @@ import uuid
 client = boto3.client('s3')
 bucket = os.environ['BUCKET']
 
+import logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 def lambda_handler(event, context):
-    
+
+    logger.info("checking for new code deployement["+str(event)+"]")
     io = StringIO()
     json.dump(event, io)
-    ts = datetime.datetime.now().isoformat()
-    key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")
-    pid = event["MessageId"]
-    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key+"_"+pid)
+    messageId = event["Records"][0]["Sns"]["MessageId"]
+    if 'testFileName' in event:
+        key = event['testFileName']
+    else:
+        ts = datetime.datetime.now().isoformat()
+        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_"+messageId
+    
+    client.put_object(Body=io.getvalue(), Bucket=bucket, Key=key)
