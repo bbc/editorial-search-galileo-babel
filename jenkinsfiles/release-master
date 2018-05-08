@@ -1,0 +1,47 @@
+#!/usr/bin/env groovy
+@org.jenkinsci.plugins.workflow.libs.Library('isite-jenkins-libs@EDPLAT-598_set_next_lambda_release_number')
+import bbc.isite.jenkinslibs.git.GithubNotifier
+import bbc.isite.jenkinslibs.cosmos.build.LambdaBuilder;
+
+pipeline {
+    agent { label '!forge' }
+     
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+    }
+    stages {
+        stage('Build') {
+            steps {
+                checkout scm
+                script {
+                    new GithubNotifier().notifyGithubPending();
+                }
+                sh 'rm -rf GalileoBabel.zip'
+		sh 'zip GalileoBabel.zip galileo_babel_s3.py'
+            }
+        }
+        stage('Release') {
+            steps {
+               script {
+                 new LambdaBuilder().lambdaSetNextReleaseNumber('cosmos-editorial-search-galileo-babel')
+               }
+               echo sh(script: 'env|sort', returnStdout: true)
+               sh "cosmos-release lambda --lambda-version=${env.LAMBDA_RELEASE_NUMBER} GalileoBabel.zip editorial-search-galileo-babel"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh "cosmos deploy-lambda -f editorial-search-galileo-babel int ${env.LAMBDA_RELEASE_NUMBER}"
+            }
+        }
+    }
+    post {
+  	  success {
+  		    script { new GithubNotifier().notifyGithubSuccess(); }
+  	 }
+  	 failure {
+  	           script { new GithubNotifier().notifyGithubFailure(); }
+  	 }
+   }
+}
