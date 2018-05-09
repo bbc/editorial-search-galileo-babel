@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@org.jenkinsci.plugins.workflow.libs.Library('isite-jenkins-libs@EDPLAT-598_set_next_lambda_release_number')
+@org.jenkinsci.plugins.workflow.libs.Library('isite-jenkins-libs@master')
 import bbc.isite.jenkinslibs.git.GithubNotifier
 import bbc.isite.jenkinslibs.cosmos.build.LambdaBuilder;
 
