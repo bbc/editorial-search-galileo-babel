@@ -160,16 +160,5 @@ class GalileoBabelStack(object):
             FunctionVersion="$LATEST",
             Name=Ref(env)
         ))
-        '''
-        template.add_resource(Permission(
-                "InvokeLambdaPermission",
-                FunctionName=GetAtt(aws_lambda, "Arn"),
-                Action="lambda:InvokeFunction",
-                SourceArn = Sub("arn:aws:s3:::${LambdaEnv}-editorial-search-galileo-babel"),
-                Principal="s3.amazonaws.com"
-        ))
-        '''
-        
-        
 
         return aws_lambda
