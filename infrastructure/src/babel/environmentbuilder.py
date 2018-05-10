@@ -127,7 +127,6 @@ def main():
     galileoRegion = params[5]
     
     aws_lambda = galileoBabelStack.build(t)
-    #galileoBabelStack.add_permisions(t, aws_lambda, galileoAccountId,galileoTopic, galileoRegion)
     #print(t.to_json())
     environmentBuilder = EnvironmentBuilder(t.to_json(), region)
     lambdaBucket = params[0]
