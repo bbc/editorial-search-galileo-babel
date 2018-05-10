@@ -5,6 +5,7 @@ from babel.galileobabelstack import GalileoBabelStack
 import argparse
 import sys
 import boto3
+import botocore
 from botocore.client import ClientError
 
 class InputParameters(object):
@@ -55,41 +56,42 @@ class GalileoPermisionAndSubscription(object):
             self.createStack = stackCreator
 
         def add_permisions(self, env, region, accountId):
-            if self.createStack.checkIfStackExist():
-                print(" stack already exist permissions not added")
-            else:
                 client = boto3.client('lambda',region_name=region,
                                 aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
                                 aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
                                 aws_session_token=self.wormHoleCredentials['sessionToken'])
 
-                response = client.add_permission(
-                    FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel',
-                    StatementId='galilioBabel'+str(env),
-                    Action='lambda:InvokeFunction',
-                    #Principal=str(self.accountId), NOTE: BOTO3 says this should be the accountId
-                    Principal='sns.amazonaws.com',
-                    #Principal=str(self.accountId),
-                    SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
-                    Qualifier=str(env))
+                try:
+                    response = client.add_permission(
+                        FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel',
+                        StatementId='galilioBabel'+str(env),
+                        Action='lambda:InvokeFunction',
+                        #Principal=str(self.accountId), NOTE: BOTO3 says this should be the accountId
+                        Principal='sns.amazonaws.com',
+                        #Principal=str(self.accountId),
+                        SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
+                        Qualifier=str(env))
             
-                print("Add permssion response["+str(response)+']')
+                    print("Add permssion response["+str(response)+']')
+                except ClientError as e:
+                    print("Permission not added ["+str(e)+"]")
 
         def subscribe_to_topic(self, region, accountId, env):
-            if self.createStack.checkIfStackExist():
-                print("stack already exist not adding permissions")
-            else:
                 client = boto3.client('sns',region_name=self.region,
                                 aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
                                 aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
                                 aws_session_token=self.wormHoleCredentials['sessionToken'])
             
-                response = client.subscribe(
+                try:
+                    response = client.subscribe(
                             TopicArn='arn:aws:sns:'+self.region+':'+self.accountId+':'+self.topic,
                             Protocol='lambda',
                             Endpoint='arn:aws:lambda:'+region+':'+accountId+':function:'+env+'-editorial-search-galileo-babel:'+env)
             
-                print("subscription response["+str(response)+']')
+                    print("subscription response["+str(response)+']')
+                except ClientError as e:
+                    print("subscription already exists ["+str(e)+"]")
+
 
 class EnvironmentBuilder(object):
     def __init__(self, stackCreator):
