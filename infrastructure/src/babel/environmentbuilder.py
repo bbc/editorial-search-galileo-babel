@@ -8,6 +8,12 @@ import boto3
 import botocore
 from botocore.client import ClientError
 
+class ConfigParams(object):
+    
+    def __init_(self):
+        self.config = {
+            'int'
+        }
 class InputParameters(object):
       
     def parse(self, argv):
@@ -16,7 +22,7 @@ class InputParameters(object):
         parser.add_argument('--environment', required=True, dest='lambda_env', help='lambda env')
         parser.add_argument('--aws-accountId', required=True, dest='awsAccountId', help='AWS accountId to create the resources')
         parser.add_argument('--region', required=True, dest='region', help='AWS region')
-        parser.add_argument('--galileo-accountId', required=True, dest='gallileo_accountId', help='Galilio Babel AccountId')
+        parser.add_argument('--galileo-accountId', required=True, dest='galileo_accountId', help='Galilio Babel AccountId')
         parser.add_argument('--galileo-region', required=True, dest='galileo_region', help='Galileo Region')
         parser.add_argument('--galileo-topic', required=True, dest='galileo_topic', help='Galileo Topic')
         args = parser.parse_args(argv)
@@ -24,7 +30,7 @@ class InputParameters(object):
                 args.lambda_env, 
                 args.awsAccountId, 
                 args.region,
-                args.gallileo_accountId,
+                args.galileo_accountId,
                 args.galileo_region,
                 args.galileo_topic,)
             
@@ -55,7 +61,7 @@ class GalileoPermisionAndSubscription(object):
             self.wormHoleCredentials = wormHoleCredentials
             self.createStack = stackCreator
 
-        def add_permisions(self, env, region, accountId):
+        def add_permissions(self, env, region, accountId):
                 client = boto3.client('lambda',region_name=region,
                                 aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
                                 aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
@@ -72,7 +78,7 @@ class GalileoPermisionAndSubscription(object):
                         SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
                         Qualifier=str(env))
             
-                    print("Add permssion response["+str(response)+']')
+                    print("Add permission response["+str(response)+']')
                 except ClientError as e:
                     print("Permission not added ["+str(e)+"]")
 
@@ -144,7 +150,7 @@ def main():
                                                                       galileoRegion, 
                                                                       wormHoleCredentials,
                                                                       stackCreator)
-    galileoPermisionAndSubscription.add_permisions(environment, region, awsAccountId)
+    galileoPermisionAndSubscription.add_permissions(environment, region, awsAccountId)
     galileoPermisionAndSubscription.subscribe_to_topic(region, awsAccountId, environment)
     
 if __name__ == '__main__':
