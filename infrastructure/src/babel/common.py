@@ -24,7 +24,6 @@ class WormHoleCredentials(object):
         e = io.BytesIO()
         buffer = StringIO()
         c = pycurl.Curl()
-        #c.setopt(c.VERBOSE, True)
         c.setopt(c.URL, 'https://wormhole.api.bbci.co.uk/account/' + self.accountId + '/credentials')
         c.setopt(pycurl.SSL_VERIFYPEER, 1)
         c.setopt(pycurl.SSL_VERIFYHOST, 2)

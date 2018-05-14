@@ -61,30 +61,6 @@ class GalileoPermisionAndSubscription(object):
             self.wormHoleCredentials = wormHoleCredentials
             self.createStack = stackCreator
 
-        def add_permissions(self, env, region, accountId):
-                client = boto3.client('lambda',region_name=region,
-                                aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
-                                aws_secret_access_key=self.wormHoleCredentials['secretAccessKey'],
-                                aws_session_token=self.wormHoleCredentials['sessionToken'])
-
-                try:
-                    response = client.add_permission(
-                        FunctionName='arn:aws:lambda:'+region+':'+accountId+':function:'+str(env)+'-editorial-search-galileo-babel',
-                        StatementId='galilioBabel'+str(env),
-                        Action='lambda:InvokeFunction',
-                        #Principal=str(self.accountId), NOTE: BOTO3 says this should be the accountId
-                        Principal='sns.amazonaws.com',
-                        #Principal=str(self.accountId),
-                        SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
-                        Qualifier=str(env))
-                        # Note: We think that for the lambda to work, you have to set a Qualifier in the permission,
-                        # and at time of writing, we think you can't do that using CloudFormation, which is why this is
-                        # scripted rather than in the CloudFormation template.
-            
-                    print("Add permission response["+str(response)+']')
-                except ClientError as e:
-                    print("Permission not added ["+str(e)+"]")
-
         def subscribe_to_topic(self, region, accountId, env):
                 client = boto3.client('sns',region_name=self.region,
                                 aws_access_key_id=self.wormHoleCredentials['accessKeyId'],
@@ -138,22 +114,20 @@ def main():
     lambdaBucket = params[0]
     
     aws_lambda = galileoBabelStack.build(t)
-    #print(t.to_json())
+    galileoBabelStack.add_permissions(t, aws_lambda, galileoAccountId,galileoTopic, galileoRegion, environment)
     stackCreator = CreateStack(environment+"-editorial-search-galileo-babel-stack", 
                                 t.to_json(), 
                                 region, 
                                 lambdaBucket, 
                                 environment,
                                 wormHoleCredentials)
-    environmentBuilder = EnvironmentBuilder(stackCreator)
-
-    environmentBuilder.buildEnvironment()
     galileoPermisionAndSubscription = GalileoPermisionAndSubscription(galileoAccountId, 
                                                                       galileoTopic, 
                                                                       galileoRegion, 
                                                                       wormHoleCredentials,
                                                                       stackCreator)
-    galileoPermisionAndSubscription.add_permissions(environment, region, awsAccountId)
+    environmentBuilder = EnvironmentBuilder(stackCreator)
+    environmentBuilder.buildEnvironment()
     galileoPermisionAndSubscription.subscribe_to_topic(region, awsAccountId, environment)
     
 if __name__ == '__main__':
