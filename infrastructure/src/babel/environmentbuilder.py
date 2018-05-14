@@ -77,6 +77,9 @@ class GalileoPermisionAndSubscription(object):
                         #Principal=str(self.accountId),
                         SourceArn='arn:aws:sns:'+str(self.region)+':'+str(self.accountId)+':'+str(self.topic),
                         Qualifier=str(env))
+                        # Note: We think that for the lambda to work, you have to set a Qualifier in the permission,
+                        # and at time of writing, we think you can't do that using CloudFormation, which is why this is
+                        # scripted rather than in the CloudFormation template.
             
                     print("Add permission response["+str(response)+']')
                 except ClientError as e:
