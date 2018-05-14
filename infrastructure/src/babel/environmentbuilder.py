@@ -8,12 +8,6 @@ import boto3
 import botocore
 from botocore.client import ClientError
 
-class ConfigParams(object):
-    
-    def __init_(self):
-        self.config = {
-            'int'
-        }
 class InputParameters(object):
       
     def parse(self, argv):
