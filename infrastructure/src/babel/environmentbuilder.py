@@ -26,7 +26,6 @@ class ConfigParser(object):
         
     def getConfig(self, env):
         try:
-            envOfInterest = self.config[env]
             return self._create_config(env)
         except KeyError as e:
             return self._create_config("int")
