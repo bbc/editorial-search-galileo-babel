@@ -8,9 +8,6 @@ import boto3
 import botocore
 from botocore.client import ClientError
 import json
-from pprint import pprint
-import os
-
 
 class Config(object):
 
