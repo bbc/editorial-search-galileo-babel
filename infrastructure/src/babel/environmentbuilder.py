@@ -21,7 +21,6 @@ class Config(object):
 class ConfigParser(object):
     
     def __init__(self):
-        cwd = os.getcwd()
         with open('babel/config.json') as f:
             self.config = json.load(f)
         
