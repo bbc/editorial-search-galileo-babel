@@ -37,15 +37,16 @@ You will need to install troposhere and some other Python packages:
     In the directory  ```<APP_DIRECTORY>/infrastructure/src``` 
     
     Type the following:
-    ```python -m babel.environmentbuilder --lambda-function-bucket <s3-bucket-containing-zipped-lambda-function> --environment <env> --aws-accountId <aws account id> --region <aws region> --galileo-accountId <galileo accountId> --galileo-region <galileo region> --galileo-topic <galileo topic>```
+    ```python -m babel.environmentbuilder --lambda-function-bucket <s3-bucket-containing-zipped-lambda-function> --env <env> ```
 
     eg:
-    ```python -m babel.environmentbuilder --lambda-function-bucket galileo-babel-lambda --environment int --aws-accountId 195048873603 --region eu-west-2 --galileo-accountId 161201357662 --galileo-region eu-west-1 --galileo-topic int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2```
+    ```python -m babel.environmentbuilder --lambda-function-bucket galileo-babel-lambda --env int ```
 
     NOTE: 
     1. When you first run this, if the bucket does not exist it will create one. The name of the bucket created is extactly the same name as the lambda.
     2. When you delete the stack if there is data in the bucket then it will not attempt to delete the bucket.
     3. When you try to create the stack if the bucket already exist then the cloudformation script will not include the bucket creation component.
+    4. ```config.json``` contains the aws environment configurations used to create the stack
 
 ##### Test the lambda function
 
