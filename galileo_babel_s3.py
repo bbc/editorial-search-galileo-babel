@@ -19,7 +19,6 @@ def lambda_handler(event, context):
     logger.info("checking for new code deployement["+str(event)+"]")
     io = StringIO()
     json.dump(event, io)
-
     messageId = event["Records"][0]["Sns"]["MessageId"]
     if 'testFileName' in event:
         key = event['testFileName']

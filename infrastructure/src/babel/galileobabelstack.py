@@ -18,8 +18,16 @@ class GalileoBabelStack(object):
                     BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
                     DeletionPolicy="Retain"
         ))
-        
 
+    def add_permissions(self,template, aws_lambda, galileoBabelTopic, env):
+            template.add_resource(Permission(
+                "InvokeLambdaPermission",
+                FunctionName=Join(':',[GetAtt(aws_lambda, "Arn"), env]),
+                Action="lambda:InvokeFunction",
+                SourceArn = galileoBabelTopic,
+                Principal= "sns.amazonaws.com"
+            ))
+        
     def build(self, template):
         
         lambda_bucket = template.add_parameter(Parameter(
@@ -64,7 +72,6 @@ class GalileoBabelStack(object):
 
         env = template.add_parameter(Parameter(
             "LambdaEnv",
-            AllowedValues=["int", "test", "live", "dev"],
             Default="int",
             Description="Environment this lambda represents - used for alias name",
             Type="String",
@@ -121,16 +128,6 @@ class GalileoBabelStack(object):
                 Timeout=Ref(timeout)
             )
         )
-
-        template.add_resource(Permission(
-                "InvokeLambdaPermission",
-                FunctionName=GetAtt(aws_lambda, "Arn"),
-                Action="lambda:InvokeFunction",
-                SourceArn = Sub("arn:aws:s3:::${LambdaEnv}-editorial-search-galileo-babel"),
-                Principal="s3.amazonaws.com"
-            ))
-
-
                     
         template.add_resource(PolicyType(
             "FunctionPolicy",
@@ -153,10 +150,12 @@ class GalileoBabelStack(object):
             )
         ))
 
-        template.add_resource(Alias(
+        alias = template.add_resource(Alias(
             "GalileoBabelLambdaAlias",
             Description="Alias for the galileo babel lambda",
             FunctionName=Ref(aws_lambda),
             FunctionVersion="$LATEST",
             Name=Ref(env)
         ))
+
+        return aws_lambda
