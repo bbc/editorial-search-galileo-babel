@@ -19,8 +19,7 @@ class GalileoBabelStack(object):
                     DeletionPolicy="Retain"
         ))
 
-    def add_permissions(self,template, aws_lambda, galileoAccountId, galileoTopic, galileoRegion, env):
-            galileoBabelTopic = "arn:aws:sns:"+galileoRegion+":"+galileoAccountId+":"+galileoTopic
+    def add_permissions(self,template, aws_lambda, galileoBabelTopic, env):
             template.add_resource(Permission(
                 "InvokeLambdaPermission",
                 FunctionName=Join(':',[GetAtt(aws_lambda, "Arn"), env]),
@@ -150,8 +149,8 @@ class GalileoBabelStack(object):
             
             )
         ))
-        
-        template.add_resource(Alias(
+
+        alias = template.add_resource(Alias(
             "GalileoBabelLambdaAlias",
             Description="Alias for the galileo babel lambda",
             FunctionName=Ref(aws_lambda),

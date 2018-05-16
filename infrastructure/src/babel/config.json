@@ -1,0 +1,29 @@
+{
+    "int": {
+        "awsAccountId": "195048873603",
+        "awsRegion": "eu-west-2",
+        "galileoBabel": {
+            "awsAccountId": "161201357662",
+            "awsRegion":"eu-west-1",
+            "topic":"arn:aws:sns:eu-west-1:161201357662:int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2"
+        }
+    },
+    "test": {
+        "awsAccountId": "195048873603",
+        "awsRegion": "eu-west-2",
+        "galileoBabel": {
+            "awsAccountId": "161201357662",
+            "awsRegion":"eu-west-1",
+            "topic":"arn:aws:sns:eu-west-1:161201357662:test-galileo-babel-resources-PublishTopic-1JLISD0OVHPNZ"
+        }
+    },
+    "live": {
+        "awsAccountId": "439492541004",
+        "awsRegion": "eu-west-2",
+        "galileoBabel": {
+            "awsAccountId": "816201991468",
+            "awsRegion":"eu-west-1",
+            "topic":"arn:aws:sns:eu-west-1:816201991468:live-galileo-babel-resources-PublishTopic-15KDT1FKBRA4M"
+        }
+    }
+}

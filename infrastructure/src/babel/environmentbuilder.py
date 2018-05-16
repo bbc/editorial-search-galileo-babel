@@ -7,26 +7,50 @@ import sys
 import boto3
 import botocore
 from botocore.client import ClientError
+import json
+from pprint import pprint
+import os
+
+
+class Config(object):
+
+    def __init__(self, awsAccountId, awsRegion, babelAccountId, babelRegion, babelTopic):
+        self.awsAccountId = awsAccountId
+        self.awsRegion = awsRegion
+        self.babelAccountId = babelAccountId
+        self.babelRegion = babelRegion
+        self.babelTopic = babelTopic
+
+class ConfigParser(object):
+    
+    def __init__(self):
+        cwd = os.getcwd()
+        with open('babel/config.json') as f:
+            self.config = json.load(f)
+        
+    def getConfig(self, env):
+        try:
+            envOfInterest = self.config[env]
+            return self._create_config(env)
+        except KeyError as e:
+            return self._create_config("int")
+
+    def _create_config(self, env):
+        return Config(self.config[env]["awsAccountId"],
+            self.config[env]["awsRegion"],
+            self.config[env]["galileoBabel"]["awsAccountId"],
+            self.config[env]["galileoBabel"]["awsRegion"],
+            self.config[env]["galileoBabel"]["topic"])
+               
 
 class InputParameters(object):
       
     def parse(self, argv):
         parser = argparse.ArgumentParser(description='Create galileo babel lambda')
-        parser.add_argument('--lambda-function-bucket', required=True, dest='lambda_function_bucket', help='Lambda function bucket')
-        parser.add_argument('--environment', required=True, dest='lambda_env', help='lambda env')
-        parser.add_argument('--aws-accountId', required=True, dest='awsAccountId', help='AWS accountId to create the resources')
-        parser.add_argument('--region', required=True, dest='region', help='AWS region')
-        parser.add_argument('--galileo-accountId', required=True, dest='galileo_accountId', help='Galilio Babel AccountId')
-        parser.add_argument('--galileo-region', required=True, dest='galileo_region', help='Galileo Region')
-        parser.add_argument('--galileo-topic', required=True, dest='galileo_topic', help='Galileo Topic')
+        parser.add_argument('--env', required=True, dest='lambda_env', help='lambda env')
+        parser.add_argument('--lambda-function-bucket', required=True, dest='lambda_bucket', help='lambda env')
         args = parser.parse_args(argv)
-        return (args.lambda_function_bucket, 
-                args.lambda_env, 
-                args.awsAccountId, 
-                args.region,
-                args.galileo_accountId,
-                args.galileo_region,
-                args.galileo_topic,)
+        return (args.lambda_env, args.lambda_bucket)
             
 class BucketUtils:
     
@@ -46,11 +70,11 @@ class BucketUtils:
             return True            
     
 
-class GalileoPermisionAndSubscription(object):
+class GalileoSubscription(object):
 
-        def __init__(self, accountId, topic, region, wormHoleCredentials, stackCreator):
+        def __init__(self, accountId, topicArn, region, wormHoleCredentials, stackCreator):
             self.accountId = accountId
-            self.topic = topic
+            self.topicArn = topicArn
             self.region = region
             self.wormHoleCredentials = wormHoleCredentials
             self.createStack = stackCreator
@@ -63,7 +87,7 @@ class GalileoPermisionAndSubscription(object):
             
                 try:
                     response = client.subscribe(
-                            TopicArn='arn:aws:sns:'+self.region+':'+self.accountId+':'+self.topic,
+                            TopicArn=self.topicArn,
                             Protocol='lambda',
                             Endpoint='arn:aws:lambda:'+region+':'+accountId+':function:'+env+'-editorial-search-galileo-babel:'+env)
             
@@ -87,42 +111,40 @@ def main():
     
     ip = InputParameters()
     params = ip.parse(sys.argv[1:])
-    awsAccountId = params[2]
-    wormCredentials = WormHoleCredentials(awsAccountId)
+
+    configParser = ConfigParser()
+    config = configParser.getConfig(params[0])
+    
+    wormCredentials = WormHoleCredentials(config.awsAccountId)
     wormHoleCredentials = wormCredentials.credentials()
 
-    region = params[3]
-    bucketUtils = BucketUtils(wormHoleCredentials, region)
-    environment = params[1]
-    t = Template(Description=params[0]+" Galileo Bable Stack "+ environment)
+    bucketUtils = BucketUtils(wormHoleCredentials, config.awsRegion)
+    t = Template(Description=params[0]+" Galileo Babel Stack ")
     t.add_version("2010-09-09")
     galileoBabelStack = GalileoBabelStack()
 
-    if (bucketUtils.bucketNotExist(environment+"-editorial-search-galileo-babel")):
+    if (bucketUtils.bucketNotExist(params[0]+"-editorial-search-galileo-babel")):
         print("Bucket does not exist -- addding")
         galileoBabelStack.addBucket(t)
     
-    galileoTopic = params[6]
-    galileoAccountId = params[4]
-    galileoRegion = params[5]
-    lambdaBucket = params[0]
-    
+    lambdaBucket = params[1]
     aws_lambda = galileoBabelStack.build(t)
-    galileoBabelStack.add_permissions(t, aws_lambda, galileoAccountId,galileoTopic, galileoRegion, environment)
-    stackCreator = CreateStack(environment+"-editorial-search-galileo-babel-stack", 
+    galileoBabelStack.add_permissions(t, aws_lambda, config.babelTopic, params[0])
+    
+    stackCreator = CreateStack(params[0]+"-editorial-search-galileo-babel-stack", 
                                 t.to_json(), 
-                                region, 
+                                config.awsRegion, 
                                 lambdaBucket, 
-                                environment,
+                                params[0],
                                 wormHoleCredentials)
-    galileoPermisionAndSubscription = GalileoPermisionAndSubscription(galileoAccountId, 
-                                                                      galileoTopic, 
-                                                                      galileoRegion, 
+    galileoSubscription = GalileoSubscription(config.babelAccountId, 
+                                                                      config.babelTopic, 
+                                                                      config.babelRegion, 
                                                                       wormHoleCredentials,
                                                                       stackCreator)
     environmentBuilder = EnvironmentBuilder(stackCreator)
     environmentBuilder.buildEnvironment()
-    galileoPermisionAndSubscription.subscribe_to_topic(region, awsAccountId, environment)
+    galileoSubscription.subscribe_to_topic(config.awsRegion, config.awsAccountId, params[0])
     
 if __name__ == '__main__':
       main()
