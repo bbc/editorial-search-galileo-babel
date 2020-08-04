@@ -1,0 +1,227 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Editorial Search Galileo Babel Stack",
+  "Parameters": {
+    "LambdaBucket": {
+      "Default": "galileo-babel-lambda",
+      "Description": "The S3 Bucket that contains the zip to bootstrap your lambda function",
+      "Type": "String"
+    },
+    "LambdaEnv": {
+      "AllowedValues": [
+        "int",
+        "test",
+        "live"
+      ],
+      "Description": "The name of the environment.",
+      "Type": "String"
+    },
+    "LambdaHandler": {
+      "Default": "galileo-babel-s3.lambda_handler",
+      "Description": "The name of the function (within your source code) that Lambda calls to start running your code.",
+      "Type": "String"
+    },
+    "LambdaMemorySize": {
+      "Default": "512",
+      "Description": "The amount of memory, in MB, that is allocated to your Lambda function.",
+      "Type": "Number"
+    },
+    "LambdaTimeout": {
+      "Default": "15",
+      "Description": "The function execution time (in seconds) after which Lambda terminates the function.",
+      "Type": "Number"
+    },
+    "S3Key": {
+      "Default": "GalileoBabel.zip",
+      "Description": "The S3 key that references the zip to bootstrap your lambda function.",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "FunctionPolicy": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Fn::Sub": "${LambdaEnv}"
+                      },
+                      "-editorial-search-galileo-babel"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:s3:::",
+                            {
+                              "Fn::Sub": "${LambdaEnv}"
+                            },
+                            "-editorial-search-galileo-babel"
+                          ]
+                        ]
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyName": "FunctionPolicy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+    "GalileoBabelLambdaAlias": {
+      "Properties": {
+        "Description": "Alias for the galileo babel lambda",
+        "FunctionName": {
+          "Ref": "LambdaFunction"
+        },
+        "FunctionVersion": "$LATEST",
+        "Name": {
+          "Ref": "LambdaEnv"
+        }
+      },
+      "Type": "AWS::Lambda::Alias"
+    },
+    "LambdaExecutionRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:logs:*:*:*"
+                  ]
+                }
+              ]
+            },
+            "PolicyName": "FunctionRolePolicy"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "LambdaFunction": {
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdaBucket"
+          },
+          "S3Key": {
+            "Ref": "S3Key"
+          }
+        },
+        "Description": "Function used to save galileo babel notifications in a bucket",
+        "Environment": {
+          "Variables": {
+            "BUCKET": {
+              "Fn::Sub": "${LambdaEnv}-editorial-search-galileo-babel"
+            },
+            "GALILEO_BABEL_LAMBDA_ENV": {
+              "Fn::Sub": "${LambdaEnv}"
+            }
+          }
+        },
+        "FunctionName": {
+          "Fn::Sub": "${LambdaEnv}-editorial-search-galileo-babel"
+        },
+        "Handler": {
+          "Ref": "LambdaHandler"
+        },
+        "MemorySize": {
+          "Ref": "LambdaMemorySize"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.6",
+        "Tags": [
+          {
+            "Key": "BBCComponent",
+            "Value": "editorial-search-galileo-babel"
+          },
+          {
+            "Key": "BBCEnvironment",
+            "Value": {
+              "Fn::Sub": "${LambdaEnv}"
+            }
+          },
+          {
+            "Key": "BBCProject",
+            "Value": "editorial-platform"
+          }
+        ],
+        "Timeout": {
+          "Ref": "LambdaTimeout"
+        }
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "NotificationsToBeIngested": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "${LambdaEnv}-editorial-search-galileo-babel"
+        }
+      },
+      "Type": "AWS::S3::Bucket"
+    }
+  }
+}
