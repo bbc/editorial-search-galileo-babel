@@ -1,10 +1,10 @@
 from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment
 from troposphere.iam import Role, PolicyType
-from troposphere.s3 import Bucket
+from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations
 from awacs.aws import Action, Policy, Allow, Statement, Principal
 from awacs.sts import AssumeRole
-from awacs.s3 import ListBucket,GetObject,PutObject
+from awacs.s3 import ListBucket, GetObject, PutObject
 
 t = Template(Description="Editorial Search Galileo Babel Stack")
 t.set_version("2010-09-09")
@@ -133,7 +133,19 @@ t.add_resource(Alias(
 t.add_resource(Bucket(
     "NotificationsToBeIngested", 
     BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
-    DeletionPolicy="Retain"
+    DeletionPolicy="Retain",
+    NotificationConfiguration=NotificationConfiguration(
+        TopicConfigurations=[
+            TopicConfigurations(
+                Event="s3:ObjectCreated:*",
+                Topic=Ref("BucketNotificationTopicArn")
+            ),
+            TopicConfigurations(
+                Event="s3:ObjectRemoved:*",
+                Topic=Ref("BucketNotificationTopicArn")
+            )
+        ]
+    )
 ))
 
 print(t.to_json(indent=2))

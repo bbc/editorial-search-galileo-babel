@@ -219,6 +219,22 @@
       "Properties": {
         "BucketName": {
           "Fn::Sub": "${LambdaEnv}-editorial-search-galileo-babel"
+        },
+        "NotificationConfiguration": {
+          "TopicConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Topic": {
+                "Ref": "BucketNotificationTopicArn"
+              }
+            },
+            {
+              "Event": "s3:ObjectRemoved:*",
+              "Topic": {
+                "Ref": "BucketNotificationTopicArn"
+              }
+            }
+          ]
         }
       },
       "Type": "AWS::S3::Bucket"
