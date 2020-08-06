@@ -2,6 +2,16 @@
 
 This is the lambda function used to put galileo babel notifications into a bucket.
 
+## Stack template
+
+Located in `./infrastructure/json` and should be generated using the accompanying troposphere script.
+
+## Future work
+
+We plan to remove the legacy scripts below as part of the work on [EDPLAT-675](https://jira.dev.bbc.co.uk/browse/EDPLAT-675). They have been left here for reference, but should not be used in the meantime.
+
+## Legacy (deprecated) scripts
+
 ##### Fetch aws credentials #####
 fetch-aws-creds 195048873603
 
