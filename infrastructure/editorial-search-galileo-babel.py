@@ -1,7 +1,7 @@
-from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags
+from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags, ImportValue, Equals, If
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment
 from troposphere.iam import Role, PolicyType
-from troposphere.s3 import Bucket
+from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations
 from awacs.aws import Action, Policy, Allow, Statement, Principal
 from awacs.sts import AssumeRole
 from awacs.s3 import ListBucket,GetObject,PutObject
@@ -50,6 +50,15 @@ t.add_parameter(Parameter(
     Type="String",
     Default="GalileoBabel.zip"
 ))
+
+t.add_parameter(Parameter(
+    "TestAccountTopicArn",
+    Description="The arn of the topic in the 'test' account. Only required for live environment.",
+    Type="String",
+    Default="arn:aws:sns:eu-west-2:195048873603:test-editorial-search-app-JsonMessageTopic-KPL25WOSM3VC"
+))
+
+t.add_condition("IsLive", Equals(Ref("LambdaEnv"), "live"))
 
 t.add_resource(
     Role(
@@ -106,7 +115,7 @@ t.add_resource(PolicyType(
     "FunctionPolicy",
     PolicyName="FunctionPolicy",
     Roles=[Ref("LambdaExecutionRole")],
-    PolicyDocument= Policy(
+    PolicyDocument=Policy(
         Statement=[
             Statement(
                 Effect=Allow,
@@ -133,7 +142,38 @@ t.add_resource(Alias(
 t.add_resource(Bucket(
     "NotificationsToBeIngested", 
     BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
-    DeletionPolicy="Retain"
+    DeletionPolicy="Retain",
+    NotificationConfiguration=NotificationConfiguration(
+        TopicConfigurations=If("IsLive", [
+            # live topic configurations ..
+            TopicConfigurations(
+                Event="s3:ObjectCreated:*",
+                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+            ),
+            TopicConfigurations(
+                Event="s3:ObjectRemoved:*",
+                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+            ),
+            TopicConfigurations(
+                Event="s3:ObjectCreated:*",
+                Topic=Ref("TestAccountTopicArn")
+            ),
+            TopicConfigurations(
+                Event="s3:ObjectRemoved:*",
+                Topic=Ref("TestAccountTopicArn")
+            )
+        ], [
+            # non-live topic configurations ..
+            TopicConfigurations(
+                Event="s3:ObjectCreated:*",
+                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+            ),
+            TopicConfigurations(
+                Event="s3:ObjectRemoved:*",
+                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+            )
+        ])
+    )
 ))
 
 print(t.to_json(indent=2))
