@@ -58,6 +58,7 @@ t.add_parameter(Parameter(
     Default="arn:aws:sns:eu-west-2:195048873603:test-editorial-search-app-JsonMessageTopic-KPL25WOSM3VC"
 ))
 
+t.add_condition("IsInt", Equals(Ref("LambdaEnv"), "int"))
 t.add_condition("IsLive", Equals(Ref("LambdaEnv"), "live"))
 
 t.add_resource(
@@ -145,7 +146,7 @@ t.add_resource(Bucket(
     DeletionPolicy="Retain",
     NotificationConfiguration=NotificationConfiguration(
         TopicConfigurations=If("IsLive", [
-            # live topic configurations ..
+            # live - notify live and test
             TopicConfigurations(
                 Event="s3:ObjectCreated:*",
                 Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
@@ -162,17 +163,21 @@ t.add_resource(Bucket(
                 Event="s3:ObjectRemoved:*",
                 Topic=Ref("TestAccountTopicArn")
             )
-        ], [
-            # non-live topic configurations ..
-            TopicConfigurations(
-                Event="s3:ObjectCreated:*",
-                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-            ),
-            TopicConfigurations(
-                Event="s3:ObjectRemoved:*",
-                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-            )
-        ])
+        ],  
+            If("IsInt", [
+                # int - notify int
+                TopicConfigurations(
+                    Event="s3:ObjectCreated:*",
+                    Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+                ),
+                TopicConfigurations(
+                    Event="s3:ObjectRemoved:*",
+                    Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+                )
+            ], [
+                # test - no notifications
+            ])
+        )
     )
 ))
 
