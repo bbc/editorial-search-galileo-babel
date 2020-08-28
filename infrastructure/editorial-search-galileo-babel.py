@@ -59,6 +59,7 @@ t.add_parameter(Parameter(
 ))
 
 t.add_condition("IsInt", Equals(Ref("LambdaEnv"), "int"))
+t.add_condition("IsTest", Equals(Ref("LambdaEnv"), "test"))
 t.add_condition("IsLive", Equals(Ref("LambdaEnv"), "live"))
 
 t.add_resource(
@@ -101,7 +102,7 @@ t.add_resource(
         Description="Function used to save galileo babel notifications in a bucket",
         Handler=Ref("LambdaHandler"),
         MemorySize=Ref("LambdaMemorySize"),
-        FunctionName=Sub("${LambdaEnv}-editorial-search-galileo-babel"),
+        FunctionName=If("IsTest", "testtest-editorial-search-galileo-babel", Sub("${LambdaEnv}-editorial-search-galileo-babel")),
         Environment=Environment(Variables={'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
         Role=GetAtt("LambdaExecutionRole", "Arn"),
         Runtime="python3.6",

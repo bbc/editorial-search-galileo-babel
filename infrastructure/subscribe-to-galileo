@@ -1,0 +1,23 @@
+#!/bin/bash
+
+ENVIRONMENT=$1
+VALID_ENVIRONMENTS='int,test,live'
+
+if [[ ! " ${VALID_ENVIRONMENTS[@]} " =~ "${ENVIRONMENT}" ]]; then
+    echo "Valid environments: 'int', 'test', 'live'"
+    exit 1
+fi
+
+declare -A TOPIC_ARN=(
+    [int]=arn:aws:sns:eu-west-1:161201357662:int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2
+    [test]=arn:aws:sns:eu-west-1:161201357662:test-galileo-babel-resources-PublishTopic-1JLISD0OVHPNZ
+    [live]=arn:aws:sns:eu-west-1:816201991468:live-galileo-babel-resources-PublishTopic-15KDT1FKBRA4M
+)
+
+declare -A LAMBDA_ARN=(
+    [int]=arn:aws:lambda:eu-west-2:195048873603:function:int-editorial-search-galileo-babel
+    [test]=arn:aws:lambda:eu-west-2:195048873603:function:testtest-editorial-search-galileo-babel
+    [live]=arn:aws:lambda:eu-west-2:439492541004:function:live-editorial-search-galileo-babel
+)
+
+aws sns subscribe --topic-arn ${TOPIC_ARN[$ENVIRONMENT]} --protocol lambda --notification-endpoint ${LAMBDA_ARN["$ENVIRONMENT"]}
