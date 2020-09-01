@@ -52,6 +52,17 @@ t.add_parameter(Parameter(
 ))
 
 t.add_parameter(Parameter(
+    "GalileoBabelTopicArn",
+    Description="The arn of the Galileo Babel topic that should trigger the lambda",
+    Type="String",
+    AllowedValues=[
+        "arn:aws:sns:eu-west-1:161201357662:int-galileo-babel-resources-PublishTopic-ASEPFH7ABVQ2",
+        "arn:aws:sns:eu-west-1:161201357662:test-galileo-babel-resources-PublishTopic-1JLISD0OVHPNZ",
+        "arn:aws:sns:eu-west-1:816201991468:live-galileo-babel-resources-PublishTopic-15KDT1FKBRA4M"
+    ]
+))
+
+t.add_parameter(Parameter(
     "TestAccountTopicArn",
     Description="The arn of the topic in the 'test' account. Only required for live environment.",
     Type="String",
@@ -131,6 +142,14 @@ t.add_resource(PolicyType(
             )
         ]
     )
+))
+
+t.add_resource(Permission(
+    "InvokeLambdaPermission",
+    FunctionName=Join(':',[GetAtt("LambdaFunction", "Arn"), Ref("LambdaEnv")]),
+    Action="lambda:InvokeFunction",
+    SourceArn=Ref("GalileoBabelTopicArn"),
+    Principal="sns.amazonaws.com"
 ))
 
 t.add_resource(Alias(
