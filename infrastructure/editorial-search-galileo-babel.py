@@ -2,9 +2,11 @@ from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags, 
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment
 from troposphere.iam import Role, PolicyType
 from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations
-from awacs.aws import Action, Policy, Allow, Statement, Principal
+from troposphere.sqs import Queue, QueuePolicy, RedrivePolicy
+from awacs.aws import Action, Policy, Allow, Statement, Principal, AWSPrincipal, Condition, ArnLike
 from awacs.sts import AssumeRole
-from awacs.s3 import ListBucket,GetObject,PutObject
+from awacs.s3 import ListBucket, GetObject, PutObject
+from awacs.sqs import SendMessage
 
 t = Template(Description="Editorial Search Galileo Babel Stack")
 t.set_version("2010-09-09")
@@ -158,6 +160,38 @@ t.add_resource(Alias(
     FunctionName=Ref("LambdaFunction"),
     FunctionVersion="$LATEST",
     Name=Ref("LambdaEnv")
+))
+
+t.add_resource(Queue(
+    "JsonNotificationReceiveQueue",
+    QueueName=Sub("${LambdaEnv}-json-notification-receive-queue"),
+    RedrivePolicy=RedrivePolicy(
+        deadLetterTargetArn=GetAtt("JsonNotificationDLQ", "Arn"),
+        maxReceiveCount=3
+    )
+))
+
+t.add_resource(Queue(
+    "JsonNotificationDLQ",
+    QueueName=Sub("${LambdaEnv}-json-notification-receive-dlq"),
+))
+
+t.add_resource(QueuePolicy(
+    "JsonNotificationReceiveQueuePolicy",
+    Queues=[Ref("JsonNotificationReceiveQueue")],
+    PolicyDocument=Policy(
+        Statement=[
+            Statement(
+                Effect=Allow,
+                Action=[SendMessage],
+                Resource=[GetAtt("JsonNotificationReceiveQueue", "Arn")],
+                Principal=AWSPrincipal("*"),
+                Condition=Condition([
+                    ArnLike("aws:SourceArn", Ref("GalileoBabelTopicArn"))
+                ])
+            )
+        ]
+    )
 ))
 
 t.add_resource(Bucket(
