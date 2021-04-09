@@ -164,7 +164,7 @@ t.add_resource(Alias(
 
 t.add_resource(Queue(
     "JsonNotificationReceiveQueue",
-    QueueName=Sub("${LambdaEnv}-json-notification-receive-queue"),
+    QueueName=Sub("${LambdaEnv}-json-notification-inbound-queue"),
     RedrivePolicy=RedrivePolicy(
         deadLetterTargetArn=GetAtt("JsonNotificationDLQ", "Arn"),
         maxReceiveCount=3
@@ -173,7 +173,7 @@ t.add_resource(Queue(
 
 t.add_resource(Queue(
     "JsonNotificationDLQ",
-    QueueName=Sub("${LambdaEnv}-json-notification-receive-dlq"),
+    QueueName=Sub("${LambdaEnv}-json-notification-inbound-dlq"),
 ))
 
 t.add_resource(QueuePolicy(
