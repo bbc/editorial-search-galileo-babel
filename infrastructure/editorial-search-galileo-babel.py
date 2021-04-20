@@ -1,4 +1,4 @@
-from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags, ImportValue, Equals, If
+from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags, ImportValue, Equals, If, Export, Output
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment, EventSourceMapping
 from troposphere.iam import Role, PolicyType
 from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations
@@ -193,43 +193,23 @@ t.add_resource(QueuePolicy(
 
 t.add_resource(Bucket(
     "NotificationsToBeIngested", 
-    BucketName= Sub("${LambdaEnv}-editorial-search-galileo-babel"),
+    BucketName=Sub("${LambdaEnv}-editorial-search-galileo-babel"),
     DeletionPolicy="Retain",
     NotificationConfiguration=NotificationConfiguration(
-        TopicConfigurations=If("IsLive", [
-            # live - notify live and test
+        TopicConfigurations=[
             TopicConfigurations(
                 Event="s3:ObjectCreated:*",
                 Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-            ),
-            TopicConfigurations(
-                Event="s3:ObjectRemoved:*",
-                Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-            ),
-            TopicConfigurations(
-                Event="s3:ObjectCreated:*",
-                Topic=Ref("TestAccountTopicArn")
-            ),
-            TopicConfigurations(
-                Event="s3:ObjectRemoved:*",
-                Topic=Ref("TestAccountTopicArn")
             )
-        ],  
-            If("IsInt", [
-                # int - notify int
-                TopicConfigurations(
-                    Event="s3:ObjectCreated:*",
-                    Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-                ),
-                TopicConfigurations(
-                    Event="s3:ObjectRemoved:*",
-                    Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
-                )
-            ], [
-                # test - no notifications
-            ])
-        )
+        ]
     )
+))
+
+t.add_output(Output(
+    "JsonBucketArn",
+    Export=Export(Sub("${LambdaEnv}-JsonBucketArn")),
+    Description="ARN of the bucket receiving clips data",
+    Value=GetAtt("NotificationsToBeIngested", "Arn")
 ))
 
 print(t.to_json(indent=2))
