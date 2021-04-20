@@ -8,6 +8,10 @@ bucket = os.environ['BUCKET']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+def get_pid_from_message_content(body):
+    content = json.loads(body["Message"])
+    return content["programme"]["pid"]
+
 def lambda_handler(event, context):
 
     logger.info("Received: {}".format(json.dumps(event)))
@@ -22,9 +26,9 @@ def lambda_handler(event, context):
         )
     else:
         body = json.loads(event["Records"][0]["body"])
-        messageId = body["MessageId"]
+        pid = get_pid_from_message_content(body)
         ts = datetime.datetime.now().isoformat()
-        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_"+messageId
+        key = ts.split("T")[0]+"/"+ts.split("T")[1].split(".")[0].replace(":","")+"_clip_"+pid
         client.put_object(
             Body=json.dumps(body, indent=2), 
             Bucket=bucket, 
