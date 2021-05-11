@@ -6,6 +6,20 @@ This is the lambda function used to put galileo babel notifications into a bucke
 
 Located in `./infrastructure/json` and should be generated using the accompanying troposphere script.
 
+## Deployment
+To deploy a new version of the lambda to the bucket, run the following:
+
+```
+./deploy.sh
+./update.sh <environment>
+```
+### Important note!
+Because at some point in the past we've ended up with a test environment named 'testtest', the correct syntax for updating the test environment is:
+
+```
+./update.sh testtest
+```
+
 ## Future work
 
 We plan to remove the legacy scripts below as part of the work on [EDPLAT-675](https://jira.dev.bbc.co.uk/browse/EDPLAT-675). They have been left here for reference, but should not be used in the meantime.
