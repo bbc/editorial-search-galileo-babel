@@ -8,9 +8,6 @@ from awacs.sts import AssumeRole
 from awacs.s3 import ListBucket, GetObject, PutObject
 from awacs.sqs import ReceiveMessage, SendMessage, GetQueueAttributes, DeleteMessage
 
-def get_file_contents(path_to_file):
-    with open(path_to_file) as file:
-        return "".join(file.readlines())
 
 t = Template(Description="Editorial Search Galileo Babel Stack")
 t.set_version("2010-09-09")
@@ -53,6 +50,20 @@ t.add_parameter(Parameter(
     Type="String",
     Default="arn:aws:sns:eu-west-2:195048873603:test-editorial-search-app-JsonMessageTopic-KPL25WOSM3VC"
 ))
+
+t.add_parameter(Parameter(
+    "LambdaBucket",
+    Description="The S3 Bucket that contains the zip to bootstrap your lambda function",
+    Type="String",
+    Default="galileo-babel-lambda"
+)) 
+
+t.add_parameter(Parameter(
+    "S3Key",
+    Description="The S3 key that references the zip to bootstrap your lambda function.",
+    Type="String",
+    Default="GalileoBabel.zip"
+)) 
 
 t.add_condition("IsInt", Equals(Ref("LambdaEnv"), "int"))
 t.add_condition("IsTest", Equals(Ref("LambdaEnv"), "test"))
@@ -100,10 +111,11 @@ t.add_resource(
     Function(
         "LambdaFunction",
         Code=Code(
-            ZipFile=get_file_contents('../galileo_babel_s3.py')
+            S3Bucket=Ref("LambdaBucket"),
+            S3Key=Ref("S3Key")
         ),
         Description="Function used to save galileo babel notifications in a bucket",
-        Handler="index.lambda_handler",
+        Handler="galileo_babel_s3.lambda_handler",
         MemorySize=Ref("LambdaMemorySize"),
         FunctionName=If("IsTest", "testtest-editorial-search-galileo-babel", Sub("${LambdaEnv}-editorial-search-galileo-babel")),
         Environment=Environment(Variables={'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
