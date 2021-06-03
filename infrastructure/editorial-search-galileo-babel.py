@@ -1,11 +1,11 @@
 from troposphere import iam, Template, Parameter, Ref, Sub, Join, GetAtt, Tags, ImportValue, Equals, If, Export, Output
 from troposphere.awslambda import Function, Code, Alias, Permission, Environment, EventSourceMapping
 from troposphere.iam import Role, PolicyType
-from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations
+from troposphere.s3 import Bucket, NotificationConfiguration, TopicConfigurations, BucketPolicy
 from troposphere.sqs import Queue, QueuePolicy, RedrivePolicy
 from awacs.aws import Action, Policy, Allow, Statement, Principal, AWSPrincipal, Condition, ArnLike
 from awacs.sts import AssumeRole
-from awacs.s3 import ListBucket, GetObject, PutObject
+from awacs.s3 import ListBucket, GetObject, GetObjectVersion, PutObject
 from awacs.sqs import ReceiveMessage, SendMessage, GetQueueAttributes, DeleteMessage
 
 
@@ -212,6 +212,24 @@ t.add_resource(Bucket(
             TopicConfigurations(
                 Event="s3:ObjectCreated:*",
                 Topic=ImportValue(Sub("${LambdaEnv}-JsonTopicArn"))
+            )
+        ]
+    )
+))
+
+t.add_resource(BucketPolicy(
+    "LiveBucketTopicPolicy",
+    Bucket=Ref("NotificationsToBeIngested"),
+    PolicyDocument=Policy(
+        Statement=[
+            Statement(
+                Effect=Allow,
+                Action=[ListBucket, GetObject, GetObjectVersion],
+                Principal=AWSPrincipal("arn:aws:iam::195048873603:root"),
+                Resource=[
+                    Join("/", [GetAtt("NotificationsToBeIngested", "Arn"), "*"]),
+                    GetAtt("NotificationsToBeIngested", "Arn")
+                ]
             )
         ]
     )
