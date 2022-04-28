@@ -65,6 +65,17 @@ t.add_parameter(Parameter(
     Default="GalileoBabel.zip"
 )) 
 
+min_python_version = 7
+max_python_version = 9
+
+python_version = t.add_parameter(Parameter(
+    "PythonVersion",
+    Description="Which version of Python to use",
+    Type="String",
+    Default="python3.8",
+    AllowedValues=[ f'python3.{ver}' for ver in range(min_python_version, max_python_version+1) ]
+))
+
 t.add_condition("IsInt", Equals(Ref("LambdaEnv"), "int"))
 t.add_condition("IsTest", Equals(Ref("LambdaEnv"), "test"))
 t.add_condition("IsLive", Equals(Ref("LambdaEnv"), "live"))
@@ -120,7 +131,7 @@ t.add_resource(
         FunctionName=If("IsTest", "testtest-editorial-search-galileo-babel", Sub("${LambdaEnv}-editorial-search-galileo-babel")),
         Environment=Environment(Variables={'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
         Role=GetAtt("LambdaExecutionRole", "Arn"),
-        Runtime="python3.6",
+        Runtime=Ref(python_version),
         Tags=Tags(BBCProject="editorial-platform",
                 BBCComponent="editorial-search-galileo-babel",
                 BBCEnvironment=Sub("${LambdaEnv}")),
