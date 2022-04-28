@@ -1,6 +1,4 @@
-from __future__ import print_function
-import json, os, boto3, io, datetime, uuid, logging
-from io import StringIO
+import json, os, boto3, datetime, logging
 
 client = boto3.client('s3')
 bucket = os.environ['BUCKET']
