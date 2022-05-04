@@ -120,7 +120,7 @@ t.add_resource(
         FunctionName=If("IsTest", "testtest-editorial-search-galileo-babel", Sub("${LambdaEnv}-editorial-search-galileo-babel")),
         Environment=Environment(Variables={'GALILEO_BABEL_LAMBDA_ENV':Sub("${LambdaEnv}"), 'BUCKET':Sub("${LambdaEnv}-editorial-search-galileo-babel")}),
         Role=GetAtt("LambdaExecutionRole", "Arn"),
-        Runtime="python3.6",
+        Runtime="python3.8",
         Tags=Tags(BBCProject="editorial-platform",
                 BBCComponent="editorial-search-galileo-babel",
                 BBCEnvironment=Sub("${LambdaEnv}")),
