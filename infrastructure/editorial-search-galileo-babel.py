@@ -220,6 +220,7 @@ t.add_resource(Bucket(
 t.add_resource(BucketPolicy(
     "LiveBucketTopicPolicy",
     Bucket=Ref("NotificationsToBeIngested"),
+    Condition="IsLive",
     PolicyDocument=Policy(
         Statement=[
             Statement(
