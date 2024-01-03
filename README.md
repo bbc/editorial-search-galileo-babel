@@ -4,7 +4,7 @@ This is the lambda function used to put galileo babel notifications into a bucke
 
 ## Stack template
 
-Located in `./infrastructure/json` and should be generated using the accompanying troposphere script.
+Should be generated from `./infrastructure/editorial-search-galileo-babel.py`
 
 ## Deployment
 To deploy a new version of the lambda to the bucket, run the following:
