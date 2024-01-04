@@ -65,6 +65,14 @@ t.add_parameter(Parameter(
     Default="GalileoBabel.zip"
 )) 
 
+function_arch = t.add_parameter(Parameter(
+    "FunctionArchitecture",
+    Default="arm64",
+    Description="Which architecture to run on (choose between x86_64 and arm64)",
+    Type="String",
+    AllowedValues=["x86_64", "arm64"]
+))
+
 t.add_condition("IsInt", Equals(Ref("LambdaEnv"), "int"))
 t.add_condition("IsTest", Equals(Ref("LambdaEnv"), "test"))
 t.add_condition("IsLive", Equals(Ref("LambdaEnv"), "live"))
@@ -114,6 +122,7 @@ t.add_resource(
             S3Bucket=Ref("LambdaBucket"),
             S3Key=Ref("S3Key")
         ),
+        Architectures=[Ref(function_arch)],
         Description="Function used to save galileo babel notifications in a bucket",
         Handler="galileo_babel_s3.lambda_handler",
         MemorySize=Ref("LambdaMemorySize"),

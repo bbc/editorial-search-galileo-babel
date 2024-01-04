@@ -4,7 +4,7 @@ This is the lambda function used to put galileo babel notifications into a bucke
 
 ## Stack template
 
-Located in `./infrastructure/json` and should be generated using the accompanying troposphere script.
+Should be generated from `./infrastructure/editorial-search-galileo-babel.py`
 
 ## Deployment
 To deploy a new version of the lambda to the bucket, run the following:
@@ -71,7 +71,7 @@ You will need to install troposhere and some other Python packages:
     2. When you delete the stack if there is data in the bucket then it will not attempt to delete the bucket.
     3. When you try to create the stack if the bucket already exist then the cloudformation script will not include the bucket creation component.
     4. ```config.json``` contains the aws environment configurations used to create the stack
-    5. This is the link to the galileo bable documentationp page: https://confluence.dev.bbc.co.uk/display/mediatools/Galileo+Babel+User+Guide
+    5. This is the link to the galileo babel documentation page: https://confluence.dev.bbc.co.uk/display/mediatools/Galileo+Babel+User+Guide
 
 ##### Test the lambda function
 
